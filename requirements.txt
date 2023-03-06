@@ -1,0 +1,5 @@
+discord.py
+tinydb
+flask
+gevent
+requests
