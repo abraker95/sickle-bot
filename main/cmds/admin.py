@@ -2,11 +2,17 @@ import discord
 import config
 import requests
 
+from main import DiscordCmdBase
+
 
 class CmdsAdmin:
 
+    @DiscordCmdBase.DiscordCmd(
+        example = f'{config.cmd_prefix}kill',
+        help    = 
+            'Forcefully kill the bot.'
+    )
     async def kill(self : discord.Client, msg : discord.Message):
-        print(msg.author.id)
         if msg.author.id != config.admin_user_id: 
             return
 

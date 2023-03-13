@@ -26,11 +26,13 @@ class DiscordBot(discord.Client):
 
         discord.Client.__init__(self, intents=intents)
         self.__logger = logging.getLogger(__class__.__name__)
-        self.__logger.info('DiscordBot initializing...')       
+        self.__logger.info('DiscordBot initializing...')
+
+        self._cmds = {}
+        self._modules = {}
 
         self.__is_connected = False
         self.__queue = queue.Queue()
-        self.__cmds = {}
         self.__db = tinydb.TinyDB('db.json', storage=DbThreadSafeMiddleware(tinydb.JSONStorage))
 
         self.__bot_loop = asyncio.get_event_loop()
@@ -61,6 +63,13 @@ class DiscordBot(discord.Client):
         await self.connect(reconnect=True)
 
 
+    def get_logger(self):
+        if isinstance(self, DiscordBot):
+            return self.__logger
+    
+        return logging.getLogger(type(self))
+
+
     async def close(self):
         await discord.Client.close(self)
         config.runtime_quit = True
@@ -78,14 +87,19 @@ class DiscordBot(discord.Client):
             return
 
         cmd = msg.content.lstrip(config.cmd_prefix)
-        if not cmd in self.__cmds:
-            # Invalid command
+
+        args = cmd.split(' ')
+        cmd  = args[0]
+        args = args[1:]
+
+        if not cmd in self._cmds:
+            self.__logger.debug(f'"{cmd}" invalid cmd')
             return
 
-        self.__bot_loop.create_task(self.__cmds[cmd](self, msg))
+        self.__bot_loop.create_task(self.__exec_cmd(cmd, msg, args))
 
         # TODO: Apply command message stat
-        self.__logger.debug(msg)
+        self.__logger.debug(f'{cmd}:@{msg.author.name} -> {msg.guild.name}:#{msg.channel.name}')
 
 
     async def on_disconnect(self):
@@ -106,6 +120,18 @@ class DiscordBot(discord.Client):
 
 
     async def setup_hook(self):
+        self.__logger.info(f'Looking for debug channel...')
+        self.__dbg_ch = None
+
+        for channel in self.get_all_channels():
+            if channel.id == config.debug_channel:
+                self.__dbg_ch = channel
+
+        if isinstance(self.__dbg_ch, type(None)):
+            self.__logger.info(f'Debug channel not found!')
+        else:
+            self.__logger.info(f'Debug channel found!')
+
         self.__logger.info(f'Registering commands and creating tasks...')
         self.loop.create_task(self.__main_loop())
 
@@ -120,6 +146,8 @@ class DiscordBot(discord.Client):
             self.__logger.info(f'Importing {module_file}')
             module = importlib.import_module(f'main.cmds.{module_file}')
 
+            self._modules[module_file] = []
+
             # Convert from snake_case to CamelCase
             class_name = f'Cmds{"".join([ (word[0].upper() + word[1:]) for word in module_file.split("_") ])}'
 
@@ -127,11 +155,27 @@ class DiscordBot(discord.Client):
             members = inspect.getmembers(class_type)
 
             for name, member in members:
+                if isinstance(member, dict):
+                    if not 'func'    in member: continue
+                    if not 'example' in member: continue
+                    if not 'help'    in member: continue
+
+                    self.__logger.info(f'    {name}')
+                    self._cmds[name] = member
+                    self._modules[module_file].append(name)
+
+                    continue
+
                 if not inspect.isfunction(member):
                     continue
 
-                self.__logger.debug(f'Adding command: {name}')
-                self.__cmds[name] = member
+                self.__logger.warning(f'"{name}" command is not wrapped in `DiscordCmdBase.DiscordCmd`. "help" cmd usage info will be unavailable!')
+
+                self.__logger.info(f'    {name}')
+                self._cmds[name]['fn']      = member
+                self._cmds[name]['example'] = ''
+                self._cmds[name]['help']    = ''
+                self._modules[module_file].append(name)
 
 
     async def on_ready(self):
@@ -153,7 +197,7 @@ class DiscordBot(discord.Client):
             
             if config.runtime_quit:
                 self.__logger.info('Exiting discord loop...')
-                await self.__report_error('Exiting discord loop...', log=False)
+                await self.__report('Exiting discord loop...', log=False)
                 await self.close()
                 return
 
@@ -161,20 +205,20 @@ class DiscordBot(discord.Client):
                 continue
 
 
-    async def __report_error(self, msg, log=True):
+    async def __exec_cmd(self, cmd: str, msg : discord.Message, args: list):
+        try: await self._cmds[cmd]['func'](self, msg, *args)
+        except Exception as e:
+            self.__logger.error(e)
+
+
+    async def __report(self, msg, log=True):
         if log:
             self.__logger.warn(msg)
 
-        debug_channel = None
-
-        # for channel in self.server.channels:
-        #     if channel.id == config.debug_channel:
-        #         debug_channel = channel
-
-        if debug_channel is None:
+        if self.__dbg_ch is None:
             self.__logger.warn(f'Enable to send error message to debug channel - Does channel exist?')
             return
 
-        try: await debug_channel.send(msg)
+        try: await self.__dbg_ch.send(msg)
         except discord.errors.HTTPException as e:
             self.__logger.warn(f'Enable to send error message to debug channel - HTTP Exception')
