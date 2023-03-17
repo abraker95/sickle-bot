@@ -1,3 +1,8 @@
+import os
+import time
+import datetime
+from typing import Optional, Union, Tuple
+
 import discord
 import config
 import requests
@@ -57,7 +62,7 @@ class CmdsUtility:
         help    = 
             'Shows the commands in a specific module group.'
     )
-    async def commands(self : discord.Client, msg : discord.Message, module: str = None):
+    async def commands(self: discord.Client, msg: discord.Message, module: str = None):
         if isinstance(module, type(None)):
             embed = discord.Embed(color=0x696969, title='🔍 Please Enter a Module Name.')
             embed.set_footer(text=f'The module groups can be seen with the {config.cmd_prefix}help command.')
@@ -80,9 +85,73 @@ class CmdsUtility:
         help    = 
             'just prints "pong!". Useful to know if the bot is up'
     )
-    async def ping(self : discord.Client, msg : discord.Message):
+    async def ping(self: discord.Client, msg: discord.Message):
         reply = discord.Embed(title='Pong!', color=0x0099FF)
 
         try: await msg.channel.send(None, embed=reply)
         except:
             self.get_logger(self).warning(f'"{__name__}" cmd fail send to - {msg.guild.name} : {msg.channel.name}')
+
+
+    @staticmethod
+    @DiscordCmdBase.DiscordCmd(
+        example = f'{config.cmd_prefix}uid @person',
+        help    = 
+            'Shows the User ID of the mentioned user. If no user is mentioned, it will show your ID instead.'
+    )
+    async def uid(self: discord.Client, msg: discord.Message, *args):
+        user = msg.mentions[0] if msg.mentions else msg.author
+
+        embed = discord.Embed(color=0x0099FF)
+        embed.add_field(name='ℹ ' + user.name, value=f'`{user.id}`')
+        await msg.channel.send(None, embed=embed)
+
+
+    @staticmethod
+    @DiscordCmdBase.DiscordCmd(
+        example = f'{config.cmd_prefix}avatar @person',
+        help    = 
+            'Shows the avatar of the user. (in the form of a direct link)'
+    )
+    async def avatar(self: discord.Client, msg: discord.Message, *args):
+        target = msg.mentions[0] if msg.mentions else msg.author
+    
+        embed = discord.Embed(color=target.color)
+        embed.set_image(url=target.avatar.url)
+        await msg.channel.send(None, embed=embed)
+
+
+    @staticmethod
+    @DiscordCmdBase.DiscordCmd(
+        example = f'{config.cmd_prefix}timestamp 2023-02-12 12:23 UTC+4',
+        help    = 
+            'Generates a discord timestamp from the date given'
+    )
+    async def timestamp(self: discord.Client, msg: discord.Message, *args):
+        if isinstance(args, type(None)):
+            await self._cmds['help']['func'](self, msg, 'timestamp')
+            return
+
+        if len(args) != 3:
+            await self._cmds['help']['func'](self, msg, 'timestamp')
+            return
+
+        date_str = ' '.join(args)
+        
+        idx = date_str.find('UTC')
+        if idx == -1:
+            date_str += 'UTC+0000'
+        else:
+            # Skip the "UTC+" / "UTC-" part
+            idx += 4
+
+            # Make sure timezone info is in UTC+#### (4 digit formatting)
+            if len(date_str[idx:]) == 1:
+                date_str = date_str[:idx] + f'0{date_str[idx:]}00'
+            if len(date_str[idx:]) == 2:
+                date_str += '00'
+
+        timestamp = datetime.datetime.strptime(date_str, '%Y-%m-%d %H:%M %Z%z').timestamp()
+        await msg.channel.send(f'<t:{int(timestamp)}>')
+
+
