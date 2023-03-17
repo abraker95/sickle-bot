@@ -120,19 +120,9 @@ class DiscordBot(discord.Client):
 
 
     async def setup_hook(self):
-        self.__logger.info(f'Looking for debug channel...')
-        self.__dbg_ch = None
-
-        for channel in self.get_all_channels():
-            if channel.id == config.debug_channel:
-                self.__dbg_ch = channel
-
-        if isinstance(self.__dbg_ch, type(None)):
-            self.__logger.info(f'Debug channel not found!')
-        else:
-            self.__logger.info(f'Debug channel found!')
-
         self.__logger.info(f'Registering commands and creating tasks...')
+
+        # Create main loop
         self.loop.create_task(self.__main_loop())
 
         # Load commands
@@ -180,8 +170,21 @@ class DiscordBot(discord.Client):
 
     async def on_ready(self):
         await self.wait_until_ready()
-        self.__logger.info(f'Ready!')
 
+        self.__logger.info(f'Looking for debug channel...')
+        self.__dbg_ch = None
+
+        # Look for debug channel where errors would get posted
+        for channel in self.get_all_channels():
+            if channel.id == config.debug_channel:
+                self.__dbg_ch = channel
+
+        if isinstance(self.__dbg_ch, type(None)):
+            self.__logger.info(f'Debug channel not found!')
+        else:
+            self.__logger.info(f'Debug channel found!')
+
+        self.__logger.info(f'Ready!')
         await self.change_presence(activity=discord.Game(':bat:'), status=discord.Status.online)
 
 
