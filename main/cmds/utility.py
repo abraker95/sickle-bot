@@ -195,3 +195,90 @@ class CmdsUtility:
         await msg.channel.send(f'<t:{int(timestamp)}>')
 
 
+    @staticmethod
+    @DiscordCmdBase.DiscordCmd(
+        example = f'{config.cmd_prefix}echo Hello world!',
+        help    = 
+            'Repeats the given text.'
+    )
+    async def echo(self: discord.Client, msg: discord.Message):
+        pass
+
+
+    @staticmethod
+    @DiscordCmdBase.DiscordCmd(
+        example = f'{config.cmd_prefix}poll Want to eat?; Yes; No; Hand me the cheese',
+        help    = 
+            'Creates a poll with the items from the inputted list. '
+            'Separate list items with a semicolon and a space.'
+    )
+    async def poll(self: discord.Client, msg: discord.Message):
+        pass
+
+
+    @staticmethod
+    @DiscordCmdBase.DiscordCmd(
+        example = f'{config.cmd_prefix}remind 1:03:15 LEEEEROOOOY JEEEEEENKIIIIINS!',
+        help    = 
+            'Sets a timer in seconds and displays the message input after it\'s done.'
+    )
+    async def remind(self: discord.Client, msg: discord.Message):
+        pass
+
+
+    @staticmethod
+    @DiscordCmdBase.DiscordCmd(
+        example = f'{config.cmd_prefix}reminders 3',
+        help    = 
+            'Shows you a list of up to five pending reminders that you made. '
+            'Input a number after the command to see more details about that reminder.'
+    )
+    async def reminders(self: discord.Client, msg: discord.Message):
+        pass
+
+
+    @staticmethod
+    @DiscordCmdBase.DiscordCmd(
+        example = f'{config.cmd_prefix}roll 701',
+        help    = 
+            'Gives a random number from 0 to 100. You can specify the highest number '
+            'the function calls by adding a number after the command. The Number '
+            'TECHNICALLY does not have a limit but the bigger you use, the bigger '
+            'the message, which just looks plain spammy.'
+    )
+    async def roll(self: discord.Client, msg: discord.Message):
+        pass
+
+
+    @staticmethod
+    @DiscordCmdBase.DiscordCmd(
+        example = f'{config.cmd_prefix}choose Pizza Burgers Both',
+        help    = 
+            'The bot will select a thing from the inputed list. Separate list '
+            'items with a space.'
+    )
+    async def choose(self: discord.Client, msg: discord.Message):
+        pass
+
+
+    @staticmethod
+    @DiscordCmdBase.DiscordCmd(
+        example = f'{config.cmd_prefix}serverinfo',
+        help    = 
+            'Shows information about the server the command was used on.'
+    )
+    async def serverinfo(self: discord.Client, msg: discord.Message):
+        pass
+
+
+    @staticmethod
+    @DiscordCmdBase.DiscordCmd(
+        example = f'{config.cmd_prefix}userinfo @person',
+        help    = 
+            'Shows information about the mentioned user. If no user is mentioned, '
+            'it will show information about you, instead.'
+    )
+    async def userinfo(self: discord.Client, msg: discord.Message):
+        pass
+
+

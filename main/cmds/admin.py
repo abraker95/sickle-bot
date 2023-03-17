@@ -28,3 +28,17 @@ class CmdsAdmin:
         requests.put('http://127.0.0.1:5000/internal', json={
             'shutdown' : True
         })
+
+
+    @staticmethod
+    @DiscordCmdBase.DiscordCmd(
+        example = f'{config.cmd_prefix}evaluate print("hello world")',
+        help    = 
+            'Executes raw python code. This should be used with caution.'
+    )
+    async def evaluate(self : discord.Client, msg : discord.Message):
+        if msg.author.id != config.admin_user_id: 
+            return
+            
+        # TODO
+        pass
