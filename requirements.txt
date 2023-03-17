@@ -3,3 +3,5 @@ tinydb
 flask
 gevent
 requests
+
+pillow

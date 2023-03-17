@@ -3,6 +3,8 @@ import time
 import datetime
 from typing import Optional, Union, Tuple
 
+from PIL import Image, ImageColor
+
 import discord
 import config
 import requests
@@ -105,6 +107,44 @@ class CmdsUtility:
         embed = discord.Embed(color=0x0099FF)
         embed.add_field(name='ℹ ' + user.name, value=f'`{user.id}`')
         await msg.channel.send(None, embed=embed)
+
+
+    @staticmethod
+    @DiscordCmdBase.DiscordCmd(
+        example = f'{config.cmd_prefix}color #1ABC9C',
+        help    = 
+            'Generates a color from the given HEX code or provided RGB numbers.'
+    )
+    async def color(self: discord.Client, msg: discord.Message, *args):
+        if len(args) == 0:
+            await self._cmds['help']['func'](self, msg, 'color')
+            return
+
+        rgb = None
+
+        if len(args) == 1:
+            # Interpret as hex
+            rgb = ImageColor.getcolor(args[0], 'RGB')
+
+        if len(args) == 3:
+            # Interpret as (r, g, b)
+            for arg in args:
+                if not 0 <= int(arg) <= 255:
+                    await msg.channel.send(None, 'Error processing inputted variables.\n 0 <= R G B <= 255.')
+                    return
+                    
+            rgb = (int(args[0]), int(args[1]), int(args[2]))
+
+        if isinstance(rgb, type(None)):
+            await msg.channel.send('Error processing inputted variables.')
+            return
+        
+        img = Image.new('RGB', (50, 50), rgb)
+        img.save(f'cache/{msg.author.id}.png')
+        
+        await msg.channel.send(file=discord.File(f'cache/{msg.author.id}.png'))
+        
+        os.remove(f'cache/{msg.author.id}.png')
 
 
     @staticmethod

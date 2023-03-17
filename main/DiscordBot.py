@@ -35,6 +35,9 @@ class DiscordBot(discord.Client):
         self.__queue = queue.Queue()
         self.__db = tinydb.TinyDB('db.json', storage=DbThreadSafeMiddleware(tinydb.JSONStorage))
 
+        # Needed for misc commands that upload images, downloads, etc
+        os.makedirs('cache', exist_ok=True)
+
         self.__bot_loop = asyncio.get_event_loop()
         self.__bot_loop.create_task(self.start(config.discord_token))
 
