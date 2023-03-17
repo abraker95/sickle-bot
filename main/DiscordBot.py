@@ -213,6 +213,16 @@ class DiscordBot(discord.Client):
         except Exception as e:
             self.__logger.error(e)
 
+            try: await self.__dbg_ch.send(
+                '```\n'
+                f'{msg.guild.name}:#{msg.channel.name} @{msg.author.name} | "{config.cmd_prefix}{cmd} {" ".join(args)}"\n'
+                f'Raised {type(e)}:\n'
+                f'    {e}\n'
+                '```'
+            )
+            except discord.errors.HTTPException as e:
+                self.__logger.warn(f'Enable to send error message to debug channel | HTTP Exception - {e}')
+
 
     async def __report(self, msg, log=True):
         if log:
