@@ -15,7 +15,7 @@ class CmdsUtility:
             'Returns the list of command modules or gives you the '
             'description and usage for a selected command.'
     )
-    async def help(self : discord.Client, msg : discord.Message, cmd=None):
+    async def help(self: discord.Client, msg: discord.Message, cmd: Optional[str] = None):
         if isinstance(cmd, type(None)):
             reply = discord.Embed(type='rich', title='❔Help❔', color=0x2cefe5)
         
@@ -37,9 +37,16 @@ class CmdsUtility:
             reply = discord.Embed(type='rich', color=0x696969, title='🔍 No such command was found...')
         else:
             reply = discord.Embed(title=f':book: HELP {cmd}', color=0x1B6F5F)
-            reply.add_field(name='Command Usage Example and Information', value=self._cmds[cmd]['help'])
+            reply.add_field(
+                name = 'Command Usage Example and Information', 
+                value = 
+                    f"Example: `{self._cmds[cmd]['example']}`\n"
+                    "```\n"
+                    f"{self._cmds[cmd]['help']}\n"
+                    "```"
+            )
             
-        try: await msg.channel.send(None, embed=reply)
+        try: await msg.channel.send(None, embed = reply)
         except:
             self.get_logger(self).warning(f'"{__name__}" cmd fail send to - {msg.guild.name} : {msg.channel.name}')
 
