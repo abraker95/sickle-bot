@@ -17,7 +17,7 @@ class CmdsRoles:
             'role name. Requires the user who calls the command to have '
             'the Administrator permision.'
     )
-    async def autorole(self : discord.Client, msg : discord.Message):
+    async def autorole(self : discord.Client, msg : discord.Message, *args):
         pass
 
 
@@ -28,7 +28,7 @@ class CmdsRoles:
             'Creates a new role on the server. Requires the user who calls '
             'the command to have the Manage Roles permision.'
     )
-    async def createrole(self : discord.Client, msg : discord.Message):
+    async def createrole(self : discord.Client, msg : discord.Message, *args):
         pass
 
 
@@ -39,7 +39,7 @@ class CmdsRoles:
             'Destroy an existing role on the server. Requires the user who '
             'calls the command to have the Manage Roles permision'
     )
-    async def destroyrole(self : discord.Client, msg : discord.Message):
+    async def destroyrole(self : discord.Client, msg : discord.Message, *args):
         pass
 
 
@@ -52,7 +52,7 @@ class CmdsRoles:
             'list of self assignable roles can be seen with the listselfroles '
             'command.'
     )
-    async def togglerole(self : discord.Client, msg : discord.Message):
+    async def togglerole(self : discord.Client, msg : discord.Message, *args):
         pass
 
 
@@ -63,7 +63,7 @@ class CmdsRoles:
             'Makes a role self assignable. Requires the user who calls the command '
             'to have the Manage Roles permision.'
     )
-    async def addselfrole(self : discord.Client, msg : discord.Message):
+    async def addselfrole(self : discord.Client, msg : discord.Message, *args):
         pass
 
 
@@ -74,7 +74,7 @@ class CmdsRoles:
             'Makes a role no longer self assignable. Requires the user who calls the '
             'command to have the Manage Roles permision.'
     )
-    async def delselfrole(self : discord.Client, msg : discord.Message):
+    async def delselfrole(self : discord.Client, msg : discord.Message, *args):
         pass
 
 
@@ -86,7 +86,7 @@ class CmdsRoles:
             'assignable roles are added via the addrole command. A list of self '
             'assignable roles can be seen with the listselfroles command.'
     )
-    async def listselfroles(self : discord.Client, msg : discord.Message):
+    async def listselfroles(self : discord.Client, msg : discord.Message, *args):
         pass
 
     
@@ -96,5 +96,5 @@ class CmdsRoles:
         help    = 
             'Lists all the roles on the server and the total number of roles.'
     )   
-    async def roles(self : discord.Client, msg : discord.Message):
+    async def roles(self : discord.Client, msg : discord.Message, *args):
         pass

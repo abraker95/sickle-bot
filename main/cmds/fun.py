@@ -16,7 +16,7 @@ class CmdsFun:
         help    = 
             'Sets off a bomb'
     )
-    async def boom(self : discord.Client, msg : discord.Message):
+    async def boom(self : discord.Client, msg : discord.Message, *args):
         bomb = await msg.channel.send(":bomb:")
         await asyncio.sleep(5)
         await bomb.edit(content=":boom:")
@@ -44,7 +44,7 @@ class CmdsFun:
         if len(args) <= 0:
             # Grab info of latest comic to get its id
             reply = requests.get('http://xkcd.com/info.0.json')
-            
+
             if reply.status_code != 200:  # No good
                 await msg.channel.send(None, embed=discord.Embed(title=f':exclamation: Error requesting comic (HTTP {reply.status_code}', color=0x993333))
                 return

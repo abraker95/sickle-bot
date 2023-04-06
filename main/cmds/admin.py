@@ -12,7 +12,7 @@ class CmdsAdmin:
         help    = 
             'Forcefully kill the bot.'
     )
-    async def kill(self : discord.Client, msg : discord.Message):
+    async def kill(self : discord.Client, msg : discord.Message, *args):
         if msg.author.id != config.admin_user_id: 
             return
 
@@ -36,9 +36,9 @@ class CmdsAdmin:
         help    = 
             'Executes raw python code. This should be used with caution.'
     )
-    async def evaluate(self : discord.Client, msg : discord.Message):
+    async def evaluate(self : discord.Client, msg : discord.Message, *args):
         if msg.author.id != config.admin_user_id: 
             return
-            
+
         # TODO
         pass

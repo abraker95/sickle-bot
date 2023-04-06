@@ -23,7 +23,7 @@ class CmdsUtility:
             'Returns the list of command modules or gives you the '
             'description and usage for a selected command.'
     )
-    async def help(self: discord.Client, msg: discord.Message, cmd: Optional[str] = None):
+    async def help(self: discord.Client, msg: discord.Message, cmd: Optional[str] = None, *args):
         if isinstance(cmd, type(None)):
             reply = discord.Embed(type='rich', title='❔Help❔', color=0x2cefe5)
         
@@ -65,7 +65,7 @@ class CmdsUtility:
         help    = 
             'Shows the commands in a specific module group.'
     )
-    async def commands(self: discord.Client, msg: discord.Message, module: str = None):
+    async def commands(self: discord.Client, msg: discord.Message, module: str = None, *args):
         if isinstance(module, type(None)):
             embed = discord.Embed(color=0x696969, title='🔍 Please Enter a Module Name.')
             embed.set_footer(text=f'The module groups can be seen with the {config.cmd_prefix}help command.')
@@ -88,7 +88,7 @@ class CmdsUtility:
         help    = 
             'just prints "pong!". Useful to know if the bot is up'
     )
-    async def ping(self: discord.Client, msg: discord.Message):
+    async def ping(self: discord.Client, msg: discord.Message, *args):
         reply = discord.Embed(title='Pong!', color=0x0099FF)
 
         try: await msg.channel.send(None, embed=reply)
@@ -213,7 +213,7 @@ class CmdsUtility:
             'Creates a poll with the items from the inputted list. '
             'Separate list items with a semicolon and a space.'
     )
-    async def poll(self: discord.Client, msg: discord.Message):
+    async def poll(self: discord.Client, msg: discord.Message, *args):
         pass
 
 
@@ -223,7 +223,7 @@ class CmdsUtility:
         help    = 
             'Sets a timer in seconds and displays the message input after it\'s done.'
     )
-    async def remind(self: discord.Client, msg: discord.Message):
+    async def remind(self: discord.Client, msg: discord.Message, *args):
         pass
 
 
@@ -234,7 +234,7 @@ class CmdsUtility:
             'Shows you a list of up to five pending reminders that you made. '
             'Input a number after the command to see more details about that reminder.'
     )
-    async def reminders(self: discord.Client, msg: discord.Message):
+    async def reminders(self: discord.Client, msg: discord.Message, *args):
         pass
 
 
