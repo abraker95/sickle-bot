@@ -1,6 +1,7 @@
 import os
 import importlib
 import inspect
+import traceback
 
 import logging
 import asyncio
@@ -30,6 +31,8 @@ class DiscordBot(discord.Client):
 
         self._cmds = {}
         self._modules = {}
+
+        self.__dbg_ch = None
 
         self.__is_connected = False
         self.__queue = queue.Queue()
@@ -214,17 +217,32 @@ class DiscordBot(discord.Client):
     async def __exec_cmd(self, cmd: str, msg : discord.Message, args: list):
         try: await self._cmds[cmd]['func'](self, msg, *args)
         except Exception as e:
-            self.__logger.error(e)
+            frames = traceback.extract_tb(e.__traceback__)
+
+            err = ''
+            for frame in frames:
+                file = frame.filename.split('\\')[-1]
+                err += f'  {file}, line {frame.lineno} in {frame.name}\n'
+            err += f'    {frames[-1].line}'
+
+            self.__logger.error(f'{e}\n{err}')
+
+            if isinstance(self.__dbg_ch, type(None)):
+                self.__logger.warn(f'Unable to send error message to debug channel | Debug channel `none`')
+                return
+
+            # Sanitize backticks
+            err = err.replace('```', '`​`​`')
 
             try: await self.__dbg_ch.send(
                 '```\n'
                 f'{msg.guild.name}:#{msg.channel.name} @{msg.author.name} | "{config.cmd_prefix}{cmd} {" ".join(args)}"\n'
-                f'Raised {type(e)}:\n'
-                f'    {e}\n'
+                f'Raised {type(e)}: {e}\n\n'
+                f'{err}\n'
                 '```'
             )
             except discord.errors.HTTPException as e:
-                self.__logger.warn(f'Enable to send error message to debug channel | HTTP Exception - {e}')
+                self.__logger.warn(f'Unable to send error message to debug channel | HTTP Exception - {e}')
 
 
     async def __report(self, msg, log=True):
