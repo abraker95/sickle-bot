@@ -1,5 +1,6 @@
 import os
 import time
+import random
 import datetime
 from typing import Optional, Union, Tuple
 
@@ -201,8 +202,8 @@ class CmdsUtility:
         help    = 
             'Repeats the given text.'
     )
-    async def echo(self: discord.Client, msg: discord.Message):
-        pass
+    async def echo(self: discord.Client, msg: discord.Message, *args):
+        await msg.channel.send(msg.content)
 
 
     @staticmethod
@@ -246,8 +247,23 @@ class CmdsUtility:
             'TECHNICALLY does not have a limit but the bigger you use, the bigger '
             'the message, which just looks plain spammy.'
     )
-    async def roll(self: discord.Client, msg: discord.Message):
-        pass
+    async def roll(self: discord.Client, msg: discord.Message, *args):
+        end_range = None
+        
+        if len(args) > 0:
+            try: end_range = int(args[0])
+            except ValueError:
+                await self._cmds['help']['func'](self, msg, 'roll')
+                return
+
+        if isinstance(end_range, type(None)):
+            end_range = 100
+
+        num = random.randint(1, end_range)
+
+        embed = discord.Embed(color=0x1abc9c)
+        embed.add_field(name='🎲 You Rolled', value=f'```\n{num}\n```')
+        await msg.channel.send(None, embed=embed)
 
 
     @staticmethod
@@ -257,8 +273,14 @@ class CmdsUtility:
             'The bot will select a thing from the inputed list. Separate list '
             'items with a space.'
     )
-    async def choose(self: discord.Client, msg: discord.Message):
-        pass
+    async def choose(self: discord.Client, msg: discord.Message, *args):
+        if len(args) == 0:
+            await self._cmds['help']['func'](self, msg, 'choose')
+            return
+
+        choice = random.choice(args)
+        embed = discord.Embed(color=0x1ABC9C, title=':thinking: I choose... ' + choice)
+        await msg.channel.send(None, embed=embed)
 
 
     @staticmethod
@@ -267,8 +289,32 @@ class CmdsUtility:
         help    = 
             'Shows information about the server the command was used on.'
     )
-    async def serverinfo(self: discord.Client, msg: discord.Message):
-        pass
+    async def serverinfo(self: discord.Client, msg: discord.Message, *args):
+        bot_count = 0
+        user_count = 0
+        
+        for user in msg.guild.members:
+            if user.bot:
+                bot_count += 1
+            else: 
+                user_count += 1
+        
+        embed = discord.Embed(title=msg.guild.name + ' Information', color=0x1ABC9C)
+        embed.add_field(name='Name',         value=f'```python\n{msg.guild.name}\n```')
+        embed.add_field(name='Server ID',    value=f'```python\n{msg.guild.id}\n```')
+        embed.add_field(name='Created',      value=f'```python\n{msg.guild.created_at}\n```')
+        embed.add_field(name='Member Count', value=f'```python\n{user_count} (+{bot_count} bots)\n```')
+        if msg.guild.owner:
+            embed.add_field(name='Owner',        value=f'```python\n{msg.guild.owner.name}\n```')
+            embed.add_field(name='Owner ID',     value=f'```python\n{msg.guild.owner.id}\n```')
+        embed.add_field(name='Verif. Level', value=f'```python\n{msg.guild.verification_level.name}\n```')
+        embed.add_field(name='MFA Level',    value=f'```python\n{msg.guild.mfa_level.name}\n```')
+        
+        if msg.guild.afk_channel:
+            embed.add_field(name='AFK Channel', value=f'```python\n{msg.guild.afk_channel.name}\n```')
+            embed.add_field(name='AFK Timeout', value=f'```python\n{msg.guild.afk_timeout}\n```')
+
+        await msg.channel.send(None, embed=embed)
 
 
     @staticmethod
@@ -278,7 +324,19 @@ class CmdsUtility:
             'Shows information about the mentioned user. If no user is mentioned, '
             'it will show information about you, instead.'
     )
-    async def userinfo(self: discord.Client, msg: discord.Message):
-        pass
-
-
+    async def userinfo(self: discord.Client, msg: discord.Message, *args):
+        user = msg.mentions[0] if len(args) > 0 else msg.author
+        
+        embed = discord.Embed(title=f'{user.name} Information', color=user.color)
+        embed.add_field(name='Username', value=f'```python\n{user.name}#{user.discriminator}\n```')
+        embed.add_field(name='User ID',  value=f'```python\n{user.id}\n```')
+        if user.nick:
+            embed.add_field(name='Nickname', value=f'```python\n{user.nick}\n```')
+        embed.add_field(name='Joined', value=f'```python\n{user.created_at}\n```')
+        embed.add_field(name='Status', value=f'```python\n{user.status.name}\n```')
+        if user.roles:
+            embed.add_field(name='Status', value=f'```python\n{user.top_role.name}\n```')
+        embed.add_field(name='Color',  value=f'```python\n{user.color}\n```')
+        embed.add_field(name='Is bot', value=f'```python\n{user.bot}\n```')
+        
+        await msg.channel.send(None, embed=embed)
