@@ -1,14 +1,13 @@
 import os
-import time
+import warnings
 import random
 import datetime
-from typing import Optional, Union, Tuple
+from typing import Optional
 
 from PIL import Image, ImageColor
 
 import discord
 import config
-import requests
 
 from main import DiscordCmdBase
 
@@ -23,7 +22,7 @@ class CmdsUtility:
             'Returns the list of command modules or gives you the '
             'description and usage for a selected command.'
     )
-    async def help(self: discord.Client, msg: discord.Message, cmd: Optional[str] = None, *args):
+    async def help(self: discord.Client, msg: discord.Message, cmd: Optional[str] = None, *args: str):
         if isinstance(cmd, type(None)):
             reply = discord.Embed(type='rich', title='❔Help❔', color=0x2cefe5)
         
@@ -60,7 +59,7 @@ class CmdsUtility:
         help    = 
             'Shows the commands in a specific module group.'
     )
-    async def commands(self: discord.Client, msg: discord.Message, module: str = None, *args):
+    async def commands(self: discord.Client, msg: discord.Message, module: str = None, *args: str):
         if isinstance(module, type(None)):
             embed = discord.Embed(color=0x696969, title='🔍 Please Enter a Module Name.')
             embed.set_footer(text=f'The module groups can be seen with the {config.cmd_prefix}help command.')
@@ -83,7 +82,7 @@ class CmdsUtility:
         help    = 
             'just prints "pong!". Useful to know if the bot is up'
     )
-    async def ping(self: discord.Client, msg: discord.Message, *args):
+    async def ping(self: discord.Client, msg: discord.Message, *args: str):
         reply = discord.Embed(title='Pong!', color=0x0099FF)
         await msg.channel.send(None, embed=reply)
 
@@ -94,7 +93,7 @@ class CmdsUtility:
         help    = 
             'Shows the User ID of the mentioned user. If no user is mentioned, it will show your ID instead.'
     )
-    async def uid(self: discord.Client, msg: discord.Message, *args):
+    async def uid(self: discord.Client, msg: discord.Message, *args: str):
         user = msg.mentions[0] if msg.mentions else msg.author
 
         embed = discord.Embed(color=0x0099FF)
@@ -108,7 +107,7 @@ class CmdsUtility:
         help    = 
             'Generates a color from the given HEX code or provided RGB numbers.'
     )
-    async def color(self: discord.Client, msg: discord.Message, *args):
+    async def color(self: discord.Client, msg: discord.Message, *args: str):
         if len(args) == 0:
             await self._cmds['help']['func'](self, msg, 'color')
             return
@@ -146,7 +145,7 @@ class CmdsUtility:
         help    = 
             'Shows the avatar of the user. (in the form of a direct link)'
     )
-    async def avatar(self: discord.Client, msg: discord.Message, *args):
+    async def avatar(self: discord.Client, msg: discord.Message, *args: str):
         target = msg.mentions[0] if msg.mentions else msg.author
     
         embed = discord.Embed(color=target.color)
@@ -160,7 +159,7 @@ class CmdsUtility:
         help    = 
             'Generates a discord timestamp from the date given'
     )
-    async def timestamp(self: discord.Client, msg: discord.Message, *args):
+    async def timestamp(self: discord.Client, msg: discord.Message, *args: str):
         if isinstance(args, type(None)):
             await self._cmds['help']['func'](self, msg, 'timestamp')
             return
@@ -194,7 +193,7 @@ class CmdsUtility:
         help    = 
             'Repeats the given text.'
     )
-    async def echo(self: discord.Client, msg: discord.Message, *args):
+    async def echo(self: discord.Client, msg: discord.Message, *args: str):
         await msg.channel.send(msg.content)
 
 
@@ -205,7 +204,7 @@ class CmdsUtility:
             'Creates a poll with the items from the inputted list. '
             'Separate list items with a semicolon and a space.'
     )
-    async def poll(self: discord.Client, msg: discord.Message, *args):
+    async def poll(self: discord.Client, msg: discord.Message, *args: str):
         pass
 
 
@@ -215,7 +214,7 @@ class CmdsUtility:
         help    = 
             'Sets a timer in seconds and displays the message input after it\'s done.'
     )
-    async def remind(self: discord.Client, msg: discord.Message, *args):
+    async def remind(self: discord.Client, msg: discord.Message, *args: str):
         pass
 
 
@@ -226,7 +225,7 @@ class CmdsUtility:
             'Shows you a list of up to five pending reminders that you made. '
             'Input a number after the command to see more details about that reminder.'
     )
-    async def reminders(self: discord.Client, msg: discord.Message, *args):
+    async def reminders(self: discord.Client, msg: discord.Message, *args: str):
         pass
 
 
@@ -239,7 +238,7 @@ class CmdsUtility:
             'TECHNICALLY does not have a limit but the bigger you use, the bigger '
             'the message, which just looks plain spammy.'
     )
-    async def roll(self: discord.Client, msg: discord.Message, *args):
+    async def roll(self: discord.Client, msg: discord.Message, *args: str):
         end_range = None
         
         if len(args) > 0:
@@ -265,7 +264,7 @@ class CmdsUtility:
             'The bot will select a thing from the inputed list. Separate list '
             'items with a space.'
     )
-    async def choose(self: discord.Client, msg: discord.Message, *args):
+    async def choose(self: discord.Client, msg: discord.Message, *args: str):
         if len(args) == 0:
             await self._cmds['help']['func'](self, msg, 'choose')
             return
@@ -281,7 +280,7 @@ class CmdsUtility:
         help    = 
             'Shows information about the server the command was used on.'
     )
-    async def serverinfo(self: discord.Client, msg: discord.Message, *args):
+    async def serverinfo(self: discord.Client, msg: discord.Message, *args: str):
         bot_count = 0
         user_count = 0
         
@@ -316,7 +315,7 @@ class CmdsUtility:
             'Shows information about the mentioned user. If no user is mentioned, '
             'it will show information about you, instead.'
     )
-    async def userinfo(self: discord.Client, msg: discord.Message, *args):
+    async def userinfo(self: discord.Client, msg: discord.Message, *args: str):
         user = msg.mentions[0] if len(args) > 0 else msg.author
         
         embed = discord.Embed(title=f'{user.name} Information', color=user.color)
