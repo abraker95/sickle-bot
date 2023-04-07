@@ -35,10 +35,7 @@ class CmdsUtility:
             reply.set_footer(text=f'Use {config.cmd_prefix}commands <module> to get a list of commands available in that module.\n Use {config.cmd_prefix}help <command> to get a description about the command usage.')
             reply.set_image(url='https://i.imgur.com/UOzJ31H.png')
         
-            try: await msg.channel.send(None, embed=reply)
-            except:
-                self.get_logger(self).warning(f'"{__name__}" cmd fail send to - {msg.guild.name} : {msg.channel.name}')
-
+            await msg.channel.send(None, embed=reply)
             return
         
         if cmd not in self._cmds:
@@ -54,9 +51,7 @@ class CmdsUtility:
                     "```"
             )
             
-        try: await msg.channel.send(None, embed = reply)
-        except:
-            self.get_logger(self).warning(f'"{__name__}" cmd fail send to - {msg.guild.name} : {msg.channel.name}')
+        await msg.channel.send(None, embed = reply)
 
 
     @staticmethod
@@ -90,10 +85,7 @@ class CmdsUtility:
     )
     async def ping(self: discord.Client, msg: discord.Message, *args):
         reply = discord.Embed(title='Pong!', color=0x0099FF)
-
-        try: await msg.channel.send(None, embed=reply)
-        except:
-            self.get_logger(self).warning(f'"{__name__}" cmd fail send to - {msg.guild.name} : {msg.channel.name}')
+        await msg.channel.send(None, embed=reply)
 
 
     @staticmethod
