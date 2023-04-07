@@ -2,6 +2,7 @@ import os
 import importlib
 import inspect
 import traceback
+import warnings
 
 import logging
 import asyncio
@@ -214,35 +215,55 @@ class DiscordBot(discord.Client):
                 continue
 
 
-    async def __exec_cmd(self, cmd: str, msg : discord.Message, args: list):
-        try: await self._cmds[cmd]['func'](self, msg, *args)
-        except Exception as e:
-            frames = traceback.extract_tb(e.__traceback__)
+    async def __exec_cmd(self, cmd: str, msg: discord.Message, args: list):
+        with warnings.catch_warnings(record=True) as w:
+            try: await self._cmds[cmd]['func'](self, msg, *args)
+            except Exception as e:
+                frames = traceback.extract_tb(e.__traceback__)
 
-            err = ''
-            for frame in frames:
-                file = frame.filename.split('\\')[-1]
-                err += f'  {file}, line {frame.lineno} in {frame.name}\n'
-            err += f'    {frames[-1].line}'
+                err = ''
+                for frame in frames:
+                    file = frame.filename.split('\\')[-1]
+                    err += f'  {file}, line {frame.lineno} in {frame.name}\n'
+                err += f'    {frames[-1].line}'
 
-            self.__logger.error(f'{e}\n{err}')
+                self.__logger.error(f'{e}\n{err}')
 
-            if isinstance(self.__dbg_ch, type(None)):
-                self.__logger.warn(f'Unable to send error message to debug channel | Debug channel `none`')
-                return
+                if isinstance(self.__dbg_ch, type(None)):
+                    self.__logger.warn(f'Unable to send error message to debug channel | Debug channel `none`')
+                    return
 
-            # Sanitize backticks
-            err = err.replace('```', '`​`​`')
+                # Sanitize backticks
+                err = err.replace('```', '`​`​`')
 
-            try: await self.__dbg_ch.send(
-                '```\n'
-                f'{msg.guild.name}:#{msg.channel.name} @{msg.author.name} | "{config.cmd_prefix}{cmd} {" ".join(args)}"\n'
-                f'Raised {type(e)}: {e}\n\n'
-                f'{err}\n'
-                '```'
-            )
-            except discord.errors.HTTPException as e:
-                self.__logger.warn(f'Unable to send error message to debug channel | HTTP Exception - {e}')
+                try: await self.__dbg_ch.send(
+                    '```\n'
+                    f'{msg.guild.name}:#{msg.channel.name} @{msg.author.name} | "{config.cmd_prefix}{cmd} {" ".join(args)}"\n'
+                    f'Raised {type(e)}: {e}\n\n'
+                    f'{err}\n'
+                    '```'
+                )
+                except discord.errors.HTTPException as e:
+                    self.__logger.warn(f'Unable to send error message to debug channel | HTTP Exception - {e}')
+
+            # Process warnings
+            for warning in w:
+                file = warning.filename.split('\\')[-1]
+                err = f'  {file}, line {warning.lineno}'
+
+                self.__logger.warning(f'{warning.message}\n{err}')
+
+                try: await self.__dbg_ch.send(
+                    '```\n'
+                    f'{msg.guild.name}:#{msg.channel.name} @{msg.author.name} | "{config.cmd_prefix}{cmd} {" ".join(args)}"\n'
+                    f'Warning: {warning.message}\n'
+                    f'{err}\n'
+                    '```'
+                )
+                except discord.errors.HTTPException as e:
+                    self.__logger.warn(f'Unable to send error message to debug channel | HTTP Exception - {e}')
+
+            w.clear()
 
 
     async def __report(self, msg, log=True):
