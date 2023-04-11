@@ -1,3 +1,5 @@
+from typing import Optional
+
 import os
 import importlib
 import inspect
@@ -34,6 +36,8 @@ class DiscordBot(discord.Client):
         self._modules = {}
 
         self.__dbg_ch = None
+        self.__curr_msg = {}
+        self.__prev_msg = {}
 
         self.__is_connected = False
         self.__queue = queue.Queue()
@@ -82,8 +86,14 @@ class DiscordBot(discord.Client):
         config.runtime_quit = True
 
 
-    async def on_message(self, msg : discord.Message):
+    async def on_message(self, msg: discord.Message):
         # TODO: Apply general message stat
+
+        try: self.__prev_msg[msg.channel.id] = self.__curr_msg[msg.channel.id]
+        except KeyError:
+            pass
+
+        self.__curr_msg[msg.channel.id] = msg
 
         if msg.author.bot:
             # Don't respond to bots
@@ -204,6 +214,12 @@ class DiscordBot(discord.Client):
 
     def queue_data(self, data):
         self.__queue.put(data)
+
+
+    def get_prev_msg(self, channel_id: int) -> Optional[discord.Message]:
+        try: return self.__prev_msg[channel_id]
+        except KeyError:
+            return None
 
 
     async def __main_loop(self):
