@@ -166,6 +166,13 @@ class DiscordBot(discord.Client):
                 if not inspect.isfunction(member):
                     continue
 
+                if not name in self._cmds:
+                    if f'_{class_name}__' in name:
+                        # It's a private function, skip
+                        continue
+
+                    self.__logger.warning(f'"{name}" command will not be added. This warning can be ignored if this is intentional.')
+
                 self.__logger.warning(f'"{name}" command is not wrapped in `DiscordCmdBase.DiscordCmd`. "help" cmd usage info will be unavailable!')
 
                 self.__logger.info(f'    {name}')
