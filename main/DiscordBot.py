@@ -268,6 +268,15 @@ class DiscordBot(discord.Client):
                 )
                 except discord.errors.HTTPException as e:
                     self.__logger.warn(f'Unable to send error message to debug channel | HTTP Exception - {e}')
+                    if e.status == 400:  # HTTP Bad request
+                        # Still attempt to notify
+                        await self.__dbg_ch.send(
+                            '```\n'
+                            f'{msg.guild.name}:#{msg.channel.name} @{msg.author.name} | "{config.cmd_prefix}{cmd} {" ".join(args)}"\n'
+                            f'Warning: Attempted to send malformed message. Error contents will be available in logs\n'
+                            f'Raised {type(e)}: {e}\n\n'
+                            '```'
+                        )
 
             # Process warnings
             for warning in w:
@@ -285,6 +294,14 @@ class DiscordBot(discord.Client):
                 )
                 except discord.errors.HTTPException as e:
                     self.__logger.warn(f'Unable to send error message to debug channel | HTTP Exception - {e}')
+                    if e.status == 400:  # HTTP Bad request
+                        # Still attempt to notify
+                        await self.__dbg_ch.send(
+                            '```\n'
+                            f'{msg.guild.name}:#{msg.channel.name} @{msg.author.name} | "{config.cmd_prefix}{cmd} {" ".join(args)}"\n'
+                            f'Warning: Attempted to send malformed message. Error contents will be available in logs\n'
+                            '```'
+                        )
 
             w.clear()
 
