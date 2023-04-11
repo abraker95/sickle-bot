@@ -167,6 +167,10 @@ class DiscordBot(discord.Client):
                     if not 'example' in member: continue
                     if not 'help'    in member: continue
 
+                    # Underscores '_' in command names don't look nice
+                    # Replace them with period '.'
+                    name = name.replace('_', '.')
+
                     self.__logger.info(f'    {name}')
                     self._cmds[name] = member
                     self._modules[module_file].append(name)
