@@ -1,6 +1,7 @@
 import discord
 import config
 import requests
+import asyncio
 
 from main import DiscordCmdBase, DiscordBot
 
@@ -13,6 +14,13 @@ class CmdsAdmin:
             'Forcefully kill the bot.'
     )
     async def kill(self: DiscordBot, msg: discord.Message, *args: str):
+        if msg.author.id != config.admin_user_id:
+            status = discord.Embed(title=':skull_crossbones: Sigma Shutting Down.', color=0x808080)
+            await msg.channel.send(None, embed=status)
+
+            await asyncio.sleep(3)
+
+            await msg.channel.send('Just kidding, you have no admin permission.')
             return
 
         status = discord.Embed(title=':skull_crossbones: Sigma Shutting Down.', color=0x808080)
