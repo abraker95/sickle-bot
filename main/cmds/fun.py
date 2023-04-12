@@ -4,7 +4,7 @@ import asyncio
 import requests
 import random
 
-from main import DiscordCmdBase
+from main import DiscordCmdBase, DiscordBot
 
 
 
@@ -16,8 +16,8 @@ class CmdsFun:
         help    = 
             'Sets off a bomb'
     )
-    async def boom(self: discord.Client, msg: discord.Message, *args: str):
         bomb = await msg.channel.send(":bomb:")
+    async def boom(self: DiscordBot, msg: discord.Message, *args: str):
         await asyncio.sleep(5)
         await bomb.edit(content=":boom:")
 
@@ -28,7 +28,7 @@ class CmdsFun:
         help    = 
             'Outputs the specified xkcd or a random xkcd if number not specified.'
     )
-    async def xkcd(self: discord.Client, msg: discord.Message, *args: str):
+    async def xkcd(self: DiscordBot, msg: discord.Message, *args: str):
         if len(args) > 1:
             await self._cmds['help']['func'](self, msg, 'xkcd')
             return
