@@ -87,36 +87,62 @@ class DiscordBot(discord.Client):
 
 
     async def on_message(self, msg: discord.Message):
-        # TODO: Apply general message stat
+        try:
+            # TODO: Apply general message stat
 
-        try: self.__prev_msg[msg.channel.id] = self.__curr_msg[msg.channel.id]
-        except KeyError:
-            pass
+            try: self.__prev_msg[msg.channel.id] = self.__curr_msg[msg.channel.id]
+            except KeyError:
+                pass
 
-        self.__curr_msg[msg.channel.id] = msg
+            self.__curr_msg[msg.channel.id] = msg
 
-        if msg.author.bot:
-            # Don't respond to bots
-            return
+            if msg.author.bot:
+                # Don't respond to bots
+                return
 
-        if not msg.content.startswith(config.cmd_prefix):
-            # Responding to commands only
-            return
+            if not msg.content.startswith(config.cmd_prefix):
+                # Responding to commands only
+                return
 
-        cmd = msg.content.lstrip(config.cmd_prefix)
+            if not msg.author.guild_permissions.manage_channels:
+                table = self.get_db_table('bot_en')
+                if not table.contains(doc_id=msg.channel.id):
+                    self.__logger.debug(
+                        f'{msg.guild.name}:#{msg.channel.name} @{msg.author.name} | "{config.cmd_prefix}{cmd} {" ".join(args)}"\n'
+                        'Ignoring command because channel does not have `bot_en` and user has no manage channel permission.'
+                    )
+                    return
+                else:
+                    data = table.get(doc_id=msg.channel.id)
+                    if not data['chan_en']:
+                        self.__logger.debug(
+                            f'{msg.guild.name}:#{msg.channel.name} @{msg.author.name} | "{config.cmd_prefix}{cmd} {" ".join(args)}"\n'
+                            'Ignoring command because channel does not have `bot_en` and user has no manage channel permission.'
+                        )
+                        return
 
-        args = cmd.split(' ')
-        cmd  = args[0]
-        args = args[1:]
+            cmd = msg.content.lstrip(config.cmd_prefix)
 
-        if not cmd in self._cmds:
-            self.__logger.debug(f'"{cmd}" invalid cmd')
-            return
+            args = cmd.split(' ')
+            cmd  = args[0]
+            args = args[1:]
 
-        self.__bot_loop.create_task(self.__exec_cmd(cmd, msg, args))
+            if not cmd in self._cmds:
+                self.__logger.debug(f'"{cmd}" invalid cmd')
+                return
 
-        # TODO: Apply command message stat
-        self.__logger.debug(f'{cmd}:@{msg.author.name} -> {msg.guild.name}:#{msg.channel.name}')
+            self.__bot_loop.create_task(self.__exec_cmd(cmd, msg, args))
+
+            # TODO: Apply command message stat
+            self.__logger.debug(f'{cmd}:@{msg.author.name} -> {msg.guild.name}:#{msg.channel.name}')
+        except Exception as e:
+            self.__logger.error(f'Unable to process `on_message` - {type(e)}: {e}')
+            await self.__dbg_ch.send(
+                '```\n'
+                f'Error: `on_message` crash\n'
+                f'Raised {type(e)}: {e}\n\n'
+                '```'
+            )
 
 
     async def on_disconnect(self):
@@ -224,6 +250,10 @@ class DiscordBot(discord.Client):
         try: return self.__prev_msg[channel_id]
         except KeyError:
             return None
+
+
+    def get_db_table(self, table: str) -> tinydb.TinyDB.table_class:
+        return self.__db.table(table)
 
 
     async def run_help_cmd(self: "DiscordBot", msg: discord.Message, cmd: str):
