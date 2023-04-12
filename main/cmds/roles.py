@@ -20,7 +20,7 @@ class CmdsRoles:
     )
     async def autorole(self: DiscordBot, msg: discord.Message, *args: str):
         if len(args) != 1:
-            await self._cmds['help']['func'](self, msg, 'autorole')
+            await self.run_help_cmd(msg, 'autorole')
             return
 
         # TODO
@@ -35,7 +35,7 @@ class CmdsRoles:
     )
     async def createrole(self: DiscordBot, msg: discord.Message, *args: str):
         if len(args) != 1:
-            await self._cmds['help']['func'](self, msg, 'createrole')
+            await self.run_help_cmd(msg, 'createrole')
             return
 
         if not msg.author.guild_permissions.manage_roles:
@@ -66,7 +66,7 @@ class CmdsRoles:
     )
     async def destroyrole(self: DiscordBot, msg: discord.Message, *args: str):
         if len(args) != 1:
-            await self._cmds['help']['func'](self, msg, 'destroyrole')
+            await self.run_help_cmd(msg, 'destroyrole')
             return
 
         if not msg.author.guild_permissions.manage_roles:
@@ -101,7 +101,7 @@ class CmdsRoles:
     )
     async def togglerole(self: DiscordBot, msg: discord.Message, *args: str):
         if len(args) != 1:
-            await self._cmds['help']['func'](self, msg, 'togglerole')
+            await self.run_help_cmd(msg, 'togglerole')
             return
 
         role_name = args[0].lower()
@@ -155,7 +155,7 @@ class CmdsRoles:
     )
     async def addselfrole(self: DiscordBot, msg: discord.Message, *args: str):
         if len(args) != 1:
-            await self._cmds['help']['func'](self, msg, 'addselfrole')
+            await self.run_help_cmd(msg, 'addselfrole')
             return
 
         if not msg.author.guild_permissions.manage_roles:
@@ -175,7 +175,7 @@ class CmdsRoles:
     )
     async def delselfrole(self: DiscordBot, msg: discord.Message, *args: str):
         if len(args) != 1:
-            await self._cmds['help']['func'](self, msg, 'delselfrole')
+            await self.run_help_cmd(msg, 'delselfrole')
             return
 
         if not msg.author.guild_permissions.manage_roles:

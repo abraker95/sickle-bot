@@ -226,6 +226,10 @@ class DiscordBot(discord.Client):
             return None
 
 
+    async def run_help_cmd(self: "DiscordBot", msg: discord.Message, cmd: str):
+        await self._cmds['help']['func'](self, msg, cmd)
+
+
     async def __main_loop(self):
         self.__logger.info('Running main loop...')
 

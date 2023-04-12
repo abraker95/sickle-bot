@@ -32,7 +32,7 @@ class CmdsImage:
     )
     async def img_zoom(self: DiscordBot, msg: discord.Message, *args: str):
         if len(args) not in [ 1, 2 ]:
-            await self._cmds['help']['func'](self, msg, 'image.zoom')
+            await self.run_help_cmd(msg, 'image.zoom')
             return
 
         # Process and extract args
@@ -78,7 +78,7 @@ class CmdsImage:
     )
     async def img_inv(self: DiscordBot, msg: discord.Message, *args: str):
         if len(args) not in [ 0, 1 ]:
-            await self._cmds['help']['func'](self, msg, 'img.inv')
+            await self.run_help_cmd(msg, 'img.inv')
             return
 
         # Process and extract args
@@ -119,7 +119,7 @@ class CmdsImage:
     )
     async def img_chan(self: DiscordBot, msg: discord.Message, *args: str):
         if len(args) not in [ 1, 2 ]:
-            await self._cmds['help']['func'](self, msg, 'img.r')
+            await self.run_help_cmd(msg, 'img.r')
             return
 
         # Process and extract args

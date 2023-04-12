@@ -30,7 +30,7 @@ class CmdsFun:
     )
     async def xkcd(self: DiscordBot, msg: discord.Message, *args: str):
         if len(args) > 1:
-            await self._cmds['help']['func'](self, msg, 'xkcd')
+            await self.run_help_cmd(msg, 'xkcd')
             return
 
         comic_id = None

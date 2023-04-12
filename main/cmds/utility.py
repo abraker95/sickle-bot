@@ -109,7 +109,7 @@ class CmdsUtility:
     )
     async def color(self: DiscordBot, msg: discord.Message, *args: str):
         if len(args) == 0:
-            await self._cmds['help']['func'](self, msg, 'color')
+            await self.run_help_cmd(msg, 'color')
             return
 
         rgb = None
@@ -161,11 +161,11 @@ class CmdsUtility:
     )
     async def timestamp(self: DiscordBot, msg: discord.Message, *args: str):
         if isinstance(args, type(None)):
-            await self._cmds['help']['func'](self, msg, 'timestamp')
+            await self.run_help_cmd(msg, 'timestamp')
             return
 
         if len(args) != 3:
-            await self._cmds['help']['func'](self, msg, 'timestamp')
+            await self.run_help_cmd(msg, 'timestamp')
             return
 
         date_str = ' '.join(args)
@@ -244,7 +244,7 @@ class CmdsUtility:
         if len(args) > 0:
             try: end_range = int(args[0])
             except ValueError:
-                await self._cmds['help']['func'](self, msg, 'roll')
+                await self.run_help_cmd(msg, 'roll')
                 return
 
         if isinstance(end_range, type(None)):
@@ -266,7 +266,7 @@ class CmdsUtility:
     )
     async def choose(self: DiscordBot, msg: discord.Message, *args: str):
         if len(args) == 0:
-            await self._cmds['help']['func'](self, msg, 'choose')
+            await self.run_help_cmd(msg, 'choose')
             return
 
         choice = random.choice(args)
