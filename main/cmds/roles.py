@@ -3,6 +3,9 @@ import config
 import requests
 import warnings
 
+import tinydb
+from tinydb.table import Document
+
 from main import DiscordCmdBase, DiscordBot
 
 
@@ -105,8 +108,24 @@ class CmdsRoles:
             return
 
         role_name = args[0].lower()
-        roles = list([ role for role in msg.guild.roles if role.name.lower() == role_name ])
 
+        table = self.get_db_table('self_roles')
+        results = table.search(tinydb.Query().fragment({ 'server' : msg.guild.id, 'role_name' : role_name }))
+
+        # Find the role in DB
+        roles = list([ role for role in results if role['role_name'] == role_name ])
+        if len(roles) == 0:
+            embed = discord.Embed(type='rich', color=0xFF9900, title='⚠ Error')
+            embed.add_field(name='Role Not Found', value=f'**{role_name}** is not a self assignable role')
+            await msg.channel.send(None, embed=embed)
+            return
+
+        if len(roles) > 1:
+            # NOTE: Shouldn't happen
+            warnings.warn('Found more than one role in DB')
+
+        # Find the role in server
+        roles = list([ role for role in msg.guild.roles if role.name.lower() == role_name ])
         if len(roles) == 0:
             embed = discord.Embed(type='rich', color=0xFF9900, title='⚠ Error')
             embed.add_field(name='Role Not Found', value=f'Unable to find server role with the name **{role_name}** on this server.')
@@ -115,21 +134,16 @@ class CmdsRoles:
 
         if len(roles) > 1:
             # NOTE: Shouldn't happen
-            warnings.warn('Found more than one server role')
+            warnings.warn('Found more than one role in server')
 
         server_role = roles[0]
         roles = list([ role for role in msg.author.roles if role.name.lower() == role_name ])
 
         if len(roles) == 0:
             # At this point user does not have role and we want to add it
-            if server_role.permissions <= msg.author.guild_permissions:
-                await msg.author.add_roles(server_role)
+            await msg.author.add_roles(server_role)
 
-                embed = discord.Embed(title=f'✅ {role_name} has been added to you.', color=0x66cc66)
-                await msg.channel.send(None, embed=embed)
-                return
-
-            embed = discord.Embed(type='rich', color=0xDB0000, title='⛔ Insufficient Permissions. You do not have sufficient permissions for this role.')
+            embed = discord.Embed(title=f'✅ {role_name} has been added to you.', color=0x66cc66)
             await msg.channel.send(None, embed=embed)
             return
 
@@ -163,7 +177,29 @@ class CmdsRoles:
             await msg.channel.send(None, embed=embed)
             return
 
-        # TODO
+        role_name = args[0].lower()
+        role = list([ role for role in msg.guild.roles if role.name.lower() == role_name ])
+
+        if len(role) == 0:
+            embed = discord.Embed(type='rich', color=0xFF9900, title='⚠ Error')
+            embed.add_field(name='Role Not Found', value=f'Unable to find server role with the name **{role_name}** on this server.')
+            await msg.channel.send(None, embed=embed)
+            return
+
+        if len(role) > 1:
+            # NOTE: Shouldn't happen
+            warnings.warn('Found more than one role in server')
+
+        role = role[0]
+
+        table = self.get_db_table('self_roles')
+        table.upsert(
+            { 'server' : msg.guild.id, 'role_id' : role.id, 'role_name' : role.name },
+            tinydb.Query().fragment({ 'server' : msg.guild.id, 'role_id' : role.id })
+        )
+
+        embed = discord.Embed(title=f'Added {args[0]} to self roles!', color=0x1ABC9C)
+        await msg.channel.send(None, embed=embed)
 
 
     @staticmethod
@@ -183,21 +219,33 @@ class CmdsRoles:
             await msg.channel.send(None, embed=embed)
             return
 
-        # TODO
+        role_name = args[0].lower()
+        role = list([ role for role in msg.guild.roles if role.name.lower() == role_name ])
 
+        if len(role) > 1:
+            # NOTE: Shouldn't happen
+            warnings.warn('Found more than one role in server')
 
-    @staticmethod
-    @DiscordCmdBase.DiscordCmd(
-        example = f'{config.cmd_prefix}listselfroles',
-        help    = 
-            'Assigns you or removes you from one of the self assignable roles. Self '
-            'assignable roles are added via the addrole command. A list of self '
-            'assignable roles can be seen with the listselfroles command.'
-    )
-    async def listselfroles(self: discord.Client, msg: discord.Message, *args: str):
-        # TODO
+        table = self.get_db_table('self_roles')
 
-        pass
+        if len(role) == 0:
+            # Fallback to role name
+            removed = table.remove(tinydb.Query().fragment({ 'server' : msg.guild.id, 'role_name' : role_name }))
+        else:
+            removed = table.remove(tinydb.Query().fragment({ 'server' : msg.guild.id, 'role_id' : role[0].id }))
+
+        if len(removed) == 0:
+            embed = discord.Embed(type='rich', color=0xFF9900, title=':check: Command failed successfully')
+            embed.add_field(name='Remove self role', value=f'Self role "{role_name}" did not exist')
+            await msg.channel.send(None, embed=embed)
+            return
+
+        if len(removed) > 1:
+            # NOTE: Shouldn't happen
+            warnings.warn(f'Remove more than one role from db: {removed}')
+
+        embed = discord.Embed(title=f'Removed {role_name} from self roles', color=0x1ABC9C)
+        await msg.channel.send(None, embed=embed)
 
     
     @staticmethod
@@ -220,34 +268,19 @@ class CmdsRoles:
 
     @staticmethod
     @DiscordCmdBase.DiscordCmd(
-        example = f'{config.cmd_prefix}selfroles @user',
+        example = f'{config.cmd_prefix}selfroles',
         help    = 
             'Lists all the roles the user can assign to themselves, or another user can assign to themselves.'
     )   
-    async def selfroles(self: discord.Client, msg: discord.Message, *args: str):
-        user = None
-
-        if len(args) == 0:
-            user = msg.author
-
-        if len(args) == 1:
-            if len(msg.mentions) == 0:
-                await self._cmds['help']['func'](self, msg, 'selfroles')
-                return
-
-            user = msg.mentions[0]
-
-        if len(args) > 1:
-            await self._cmds['help']['func'](self, msg, 'xkcd')
-            return
+    async def selfroles(self: DiscordBot, msg: discord.Message, *args: str):
+        table = self.get_db_table('self_roles')
+        results = table.search(tinydb.Query().fragment({ 'server' : msg.guild.id }))
                 
-        user = msg.mentions[0] if msg.mentions else msg.author
-        roles = list([ role for role in msg.guild.roles if role.permissions <= user.guild_permissions ])
+        role_list = '\n'.join([ role['role_name'] for role in results ])
         
-        role_list = '\n'.join([ f'{role.name}' for role in roles ])
         if len(role_list) > 1800:
             role_list = role_list[:1800] + '...'
 
         embed = discord.Embed(color=0x1ABC9C)
-        embed.add_field(name=f'{user.name} can assign the following roles to themselves', value=f'```\n{role_list}\n```')
+        embed.add_field(name=f'Self assignable roles:', value=f'```\n{role_list}\n```')
         await msg.channel.send(None, embed=embed)
