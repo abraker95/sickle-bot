@@ -3,5 +3,6 @@ tinydb
 flask
 gevent
 requests
+validators
 
 pillow

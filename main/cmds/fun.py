@@ -16,10 +16,10 @@ class CmdsFun:
         help    = 
             'Sets off a bomb'
     )
-        bomb = await msg.channel.send(":bomb:")
     async def boom(self: DiscordBot, msg: discord.Message, *args: str):
+        bomb = await msg.channel.send(':bomb:')
         await asyncio.sleep(5)
-        await bomb.edit(content=":boom:")
+        await bomb.edit(content=':boom:')
 
 
     @staticmethod
