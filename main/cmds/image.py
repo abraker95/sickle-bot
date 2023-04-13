@@ -9,7 +9,7 @@ import warnings
 import validators
 
 import PIL
-from PIL import Image, ImageOps
+from PIL import Image, ImageOps, ImageSequence
 from io import BytesIO
 
 from main import DiscordCmdBase, DiscordBot
@@ -36,35 +36,30 @@ class CmdsImage:
             return
 
         # Process and extract args
-        ret, img, args = await CmdsImage.__parse_cmd(self, msg, len(args) == 1, args)
+        ret, frames, args = await CmdsImage.__parse_cmd(self, msg, len(args) == 1, args)
         if ret == CmdsImage.__RET_FAIL:
             return
 
         zoom = float(args[0])
 
         # Perform edit
-        new_w = int(img.width*zoom)
-        new_h = int(img.height*zoom)
+        for i in range(len(frames)):
+            new_w = int(frames[i].width*zoom)
+            new_h = int(frames[i].height*zoom)
 
-        if (new_h > 4000) or (new_w > 4000):
-            if (new_h > 1000000) or (new_w > 100000):
-                warnings.warn(f'Image dimensions waaay too large ({new_w}x{new_h}), zoom: {zoom}. Old dimensions: {img.width}x{img.height}')
+            if (new_h > 4000) or (new_w > 4000):
+                if (new_h > 1000000) or (new_w > 100000):
+                    if i == 0:
+                        warnings.warn(f'Image dimensions waaay too large ({new_w}x{new_h}), zoom: {zoom}. Old dimensions: {frames[i].width}x{frames[i].height}')
 
-            embed = discord.Embed(type='rich', color=0xFF9900, title='⚠ Error')
-            embed.add_field(name='Image resize', value=f'New image will be too large')
-            await msg.channel.send(None, embed=embed)
-            return
+                embed = discord.Embed(type='rich', color=0xFF9900, title='⚠ Error')
+                embed.add_field(name='Image resize', value=f'New image will be too large')
+                await msg.channel.send(None, embed=embed)
+                return
 
-        img = img.resize((new_w, new_h))
+            frames[i] = frames[i].resize((new_w, new_h))
 
-        # Save to memory
-        img_out = BytesIO()
-        img.save(img_out, format='png')
-        img_out.seek(0)
-
-        # Send
-        await msg.channel.send(file=discord.File(img_out, 'image.png'))
-        img_out.close()
+        await CmdsImage.__send_img(self, msg, frames)
 
 
     @staticmethod
@@ -82,30 +77,23 @@ class CmdsImage:
             return
 
         # Process and extract args
-        ret, img, args = await CmdsImage.__parse_cmd(self, msg, len(args) == 0, args)
+        ret, frames, args = await CmdsImage.__parse_cmd(self, msg, len(args) == 0, args)
         if ret == CmdsImage.__RET_FAIL:
             return
 
-        if img.mode == 'RGBA':
-            r,g,b,a = img.split()
-            img = Image.merge('RGB', (r,g,b))
+        for i in range(len(frames)):
+            if frames[i].mode == 'RGBA':
+                r,g,b,a = frames[i].split()
 
-            img = ImageOps.invert(img)
+                frames[i] = Image.merge('RGB', (r,g,b))
+                frames[i] = ImageOps.invert(frames[i])
+                r,g,b = frames[i].split()
 
-            r,g,b = img.split()
-            img = Image.merge('RGBA', (r,g,b,a))
+                frames[i] = Image.merge('RGBA', (r,g,b,a))
+            else:
+                frames[i] = ImageOps.invert(frames[i])
 
-        else:
-            img = ImageOps.invert(img)
-
-        # Save to memory
-        img_out = BytesIO()
-        img.save(img_out, format='png')
-        img_out.seek(0)
-
-        # Send
-        await msg.channel.send(file=discord.File(img_out, 'image.png'))
-        img_out.close()
+        await CmdsImage.__send_img(self, msg, frames)
 
 
     @staticmethod
@@ -123,49 +111,43 @@ class CmdsImage:
             return
 
         # Process and extract args
-        ret, img, args = await CmdsImage.__parse_cmd(self, msg, len(args) == 0, args)
+        ret, frames, args = await CmdsImage.__parse_cmd(self, msg, len(args) == 0, args)
         if ret == CmdsImage.__RET_FAIL:
             return
 
         ch = args[0]
 
-        if img.mode == 'RGBA':
-            r,g,b,a = img.split()
+        for i in range(len(frames)):
+            if frames[i].mode == 'RGBA':
+                r,g,b,a = frames[i].split()
 
-            if   ch == 'r': img = r
-            elif ch == 'g': img = g
-            elif ch == 'b': img = b
-            elif ch == 'a': img = a
+                if   ch == 'r': frames[i] = r
+                elif ch == 'g': frames[i] = g
+                elif ch == 'b': frames[i] = b
+                elif ch == 'a': frames[i] = a
+                else:
+                    embed = discord.Embed(type='rich', color=0xFF9900, title='⚠ Error')
+                    embed.add_field(name='Channel extract', value=f'Invalid channel provided')
+                    await msg.channel.send(None, embed=embed)
+                    return
             else:
-                embed = discord.Embed(type='rich', color=0xFF9900, title='⚠ Error')
-                embed.add_field(name='Channel extract', value=f'Invalid channel provided')
-                await msg.channel.send(None, embed=embed)
-                return
-        else:
-            r,g,b = img.split()
+                r,g,b = frames[i].split()
 
-            if   ch == 'r': img = r
-            elif ch == 'g': img = g
-            elif ch == 'b': img = b
-            elif ch == 'a':
-                embed = discord.Embed(type='rich', color=0xFF9900, title='⚠ Error')
-                embed.add_field(name='Channel extract', value=f'Provided image does not have an alpha channel')
-                await msg.channel.send(None, embed=embed)
-                return
-            else:
-                embed = discord.Embed(type='rich', color=0xFF9900, title='⚠ Error')
-                embed.add_field(name='Channel extract', value=f'Invalid channel provided')
-                await msg.channel.send(None, embed=embed)
-                return
+                if   ch == 'r': frames[i] = r
+                elif ch == 'g': frames[i] = g
+                elif ch == 'b': frames[i] = b
+                elif ch == 'a':
+                    embed = discord.Embed(type='rich', color=0xFF9900, title='⚠ Error')
+                    embed.add_field(name='Channel extract', value=f'Provided image does not have an alpha channel')
+                    await msg.channel.send(None, embed=embed)
+                    return
+                else:
+                    embed = discord.Embed(type='rich', color=0xFF9900, title='⚠ Error')
+                    embed.add_field(name='Channel extract', value=f'Invalid channel provided')
+                    await msg.channel.send(None, embed=embed)
+                    return
 
-        # Save to memory
-        img_out = BytesIO()
-        img.save(img_out, format='png')
-        img_out.seek(0)
-
-        # Send
-        await msg.channel.send(file=discord.File(img_out, 'image.png'))
-        img_out.close()
+        await CmdsImage.__send_img(self, msg, frames)
 
 
     @staticmethod
@@ -221,7 +203,7 @@ class CmdsImage:
 
 
     @staticmethod
-    async def __parse_cmd(self: DiscordBot, msg: discord.Message, prev_msg: bool, args: str) -> "tuple[int, Optional[Image.Image], tuple[str]]":
+    async def __parse_cmd(self: DiscordBot, msg: discord.Message, prev_msg: bool, args: str) -> "tuple[int, Optional[list[Image.Image]], tuple[str]]":
         img_url = None
         arg_start = 0
 
@@ -294,5 +276,29 @@ class CmdsImage:
             await msg.channel.send(None, embed=embed)
             return None
 
-        return img
-        
+        if img.mode == 'P':
+            frames = [ frame.copy() for frame in ImageSequence.Iterator(img) ]
+        else:
+            frames = [ img ]
+
+        for i in range(len(frames)):
+            if frames[i].mode == 'P':
+                frames[i] = frames[i].convert('RGB')
+
+        return frames
+
+
+    @staticmethod
+    async def __send_img(self: DiscordBot, msg: discord.Message, frames: "list[Image.Image]"):
+        img_out = BytesIO()
+        if len(frames) == 1:
+            ext = 'png'
+            frames[0].save(img_out, format=ext)
+        else:
+            ext = 'gif'
+            frames[0].save(img_out, format=ext, save_all=True, append_images=frames[1:], duration=10)
+        img_out.seek(0)
+
+        # Send
+        await msg.channel.send(file=discord.File(img_out, f'image.{ext}'))
+        img_out.close()
