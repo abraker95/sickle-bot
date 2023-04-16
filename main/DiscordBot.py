@@ -280,8 +280,7 @@ class DiscordBot(discord.Client):
             await asyncio.sleep(1)
             
             if config.runtime_quit:
-                self.__logger.info('Exiting discord loop...')
-                await self.__report('Exiting discord loop...', log=False)
+                await self.__report('Exiting discord loop...')
                 await self.close()
                 return
 
@@ -303,60 +302,27 @@ class DiscordBot(discord.Client):
 
                 self.__logger.error(f'{e}\n{err}')
 
-                if isinstance(self.__dbg_ch, type(None)):
-                    self.__logger.warn(f'Unable to send error message to debug channel | Debug channel `none`')
-                    return
-
                 # Sanitize backticks
                 err = err.replace('```', '`​`​`')
 
-                try: await self.__dbg_ch.send(
-                    '```\n'
+                await self.__report(
+                    f'[ ERROR ]\n'
                     f'{msg.guild.name}:#{msg.channel.name} @{msg.author.name} | "{config.cmd_prefix}{cmd} {" ".join(args)}"\n'
-                    f'Raised {type(e)}: {e}\n\n'
+                    f'Raised {type(e)}: {e}\n'
                     f'{err}\n'
-                    '```'
                 )
-                except discord.errors.HTTPException as e:
-                    self.__logger.warn(f'Unable to send error message to debug channel | HTTP Exception - {e}')
-                    if e.status == 400:  # HTTP Bad request
-                        # Still attempt to notify
-                        await self.__dbg_ch.send(
-                            '```\n'
-                            f'{msg.guild.name}:#{msg.channel.name} @{msg.author.name} | "{config.cmd_prefix}{cmd} {" ".join(args)}"\n'
-                            f'Warning: Attempted to send malformed message. Error contents will be available in logs\n'
-                            f'Raised {type(e)}: {e}\n\n'
-                            '```'
-                        )
-                except RuntimeError as e:
-                    self.__logger.warn(f'Unable to send error message to debug channel | {e}')
 
             # Process warnings
             for warning in w:
                 file = warning.filename.split('\\')[-1]
                 err = f'  {file}, line {warning.lineno}'
 
-                self.__logger.warning(f'{warning.message}\n{err}')
-
-                try: await self.__dbg_ch.send(
-                    '```\n'
+                await self.__report(
+                    f'[ WARNING ]\n'
                     f'{msg.guild.name}:#{msg.channel.name} @{msg.author.name} | "{config.cmd_prefix}{cmd} {" ".join(args)}"\n'
                     f'Warning: {warning.message}\n'
                     f'{err}\n'
-                    '```'
                 )
-                except discord.errors.HTTPException as e:
-                    self.__logger.warn(f'Unable to send error message to debug channel | HTTP Exception - {e}')
-                    if e.status == 400:  # HTTP Bad request
-                        # Still attempt to notify
-                        await self.__dbg_ch.send(
-                            '```\n'
-                            f'{msg.guild.name}:#{msg.channel.name} @{msg.author.name} | "{config.cmd_prefix}{cmd} {" ".join(args)}"\n'
-                            f'Warning: Attempted to send malformed message. Error contents will be available in logs\n'
-                            '```'
-                        )
-                except RuntimeError as e:
-                    self.__logger.warn(f'Unable to send warning message to debug channel | {e}')
 
             w.clear()
 
@@ -366,9 +332,30 @@ class DiscordBot(discord.Client):
             self.__logger.warn(msg)
 
         if self.__dbg_ch is None:
-            self.__logger.warn(f'Enable to send error message to debug channel - Does channel exist?')
+            self.__logger.warn(
+                f'Enable to send message to debug channel - Does channel exist?\n'
+                f'Msg:\n'
+                f'    {msg}\n'
+            )
             return
 
-        try: await self.__dbg_ch.send(msg)
+        try: await self.__dbg_ch.send(
+            '```\n'
+            f'{msg}'
+            '```'
+        )
         except discord.errors.HTTPException as e:
-            self.__logger.warn(f'Enable to send error message to debug channel - HTTP Exception')
+            self.__logger.warn(f'Unable to send message to debug channel | HTTP Exception - {e}')
+            if e.status == 400:  # HTTP Bad request
+                # Still attempt to notify
+                await self.__dbg_ch.send(
+                    '```\n'
+                    f'Warning: Attempted to send malformed message. Error contents will be available in logs\n'
+                    '```'
+                )
+        except RuntimeError as e:
+            self.__logger.warn(
+                f'Unable to send message to debug channel | {e}\n'
+                f'Msg:\n'
+                f'    {msg}\n'
+            )
