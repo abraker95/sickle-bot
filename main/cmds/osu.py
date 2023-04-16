@@ -16,13 +16,14 @@ from main.FeedServer import FeedServer
 class CmdsOsu:
 
     @DiscordCmdBase.DiscordCmd(
-        example = f'{config.cmd_prefix}bot.forum <cmd>',
+        example = f'{config.cmd_prefix}forum.bot <cmd>',
         help    = 
             'Access forum bot endpoint'
     )
-    async def bot_forum(self: DiscordBot, msg: discord.Message, *args: str):
+    async def forum_bot(self: DiscordBot, msg: discord.Message, *args: str):
+        # Parse args
         if len(args) < 1:
-            await self.run_help_cmd(msg, 'bot.forum')
+            await self.run_help_cmd(msg, 'forum.bot')
             return
 
         try:    bot, name = args[0].split('.')
@@ -38,9 +39,40 @@ class CmdsOsu:
         if len(args) > 1:
             data['args'] = args[1:]
 
-        success = requests.session().post(f'http://127.0.0.1:{44444}/api', json=data)
-        if not success:
-            await msg.channel.send('Failed')
+        # Send request to OT Feed Server
+        reply = None
+
+        async with aiohttp.ClientSession() as session:
+            try:
+                async with session.put(f'http://127.0.0.1:{44444}/request', timeout=1, json=data) as response:
+                    if response.status != 200:
+                        await msg.channel.send('Failed')
+                        return
+                    
+                    reply = await response.json()
+            except asyncio.TimeoutError:
+                await msg.channel.send('Timed out')
+                return
+
+        # Parse reply from OT Feed Server
+        if isinstance(reply, type(None)):
+            warnings.warn('Received invalid reply from OT Feed Server: None')
+            await msg.channel.send('Received invalid reply from OT Feed Server')
+            return
+
+        if not 'status' in reply:
+            warnings.warn(f'Received invalid reply from OT Feed Server: {reply}')
+            await msg.channel.send('Received invalid reply from OT Feed Server')
+            return
+        
+        if 'msg' in reply: txt = str(reply['msg'])
+        else:              txt = 'Done' if reply['status'] == 0 else 'Failed'
+
+        if reply['status'] == -1:  embed = discord.Embed(color=0x880000, description=txt)
+        elif reply['status'] == 0: embed = discord.Embed(color=0x008800, description=txt)
+        else:                      embed = discord.Embed(color=0x880088, description=txt)
+
+        await msg.channel.send(f'```\n{txt}\n```')
 
 
     @DiscordCmdBase.DiscordEvent()
