@@ -1,6 +1,6 @@
 import discord
 import config
-import requests
+import aiohttp
 import asyncio
 import warnings
 
@@ -8,6 +8,7 @@ import tinydb
 from tinydb.table import Document
 
 import datetime
+import config
 
 from main import DiscordCmdBase, DiscordBot
 from main.FeedServer import FeedServer

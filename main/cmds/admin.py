@@ -32,17 +32,21 @@ class CmdsAdmin:
 
         async with aiohttp.ClientSession() as session:
             # Shutdown the Feed server as well
-            async with session.put('http://127.0.0.1:5000/internal', timeout=1, json={
-                'shutdown' : True
-            }) as response:
-                if response.status != 200:
-                    warnings.warn('Could not contact feed server')
-                    return
+            data = { 'shutdown' : True }
 
-                data = await response.json()
-                if data['status'] != 'ok':
-                    warnings.warn('Feed server shutdown failed')
-                    return
+            try:
+                async with session.put(f'http://127.0.0.1:{config.feed_server_port}/internal', timeout=1, json=data) as response:
+                    if response.status != 200:
+                        warnings.warn('Could not contact feed relay server')
+                        return
+
+                    data = await response.json()
+                    if data['status'] != 'ok':
+                        warnings.warn('Feed server shutdown failed')
+                        return
+            except asyncio.TimeoutError:
+                await msg.channel.send('Feed server not responding: Timed out')
+                return
 
 
     @DiscordCmdBase.DiscordCmd(
@@ -57,15 +61,19 @@ class CmdsAdmin:
             return
 
         async with aiohttp.ClientSession() as session:
-            async with session.put('http://127.0.0.1:5000/ping', timeout=1) as response:
-                if response.status != 200:
-                    status = discord.Embed(title='Feed server not responding', color=0x800000)
-                    await msg.channel.send(None, embed=status)
-                    return
-                
-                status = discord.Embed(title='Feed server ok', color=0x008000)
-                await msg.channel.send(None, embed=status)
+            try:
+                async with session.put(f'http://127.0.0.1:{config.feed_server_port}/ping', timeout=1) as response:
+                    if response.status != 200:
+                        status = discord.Embed(title='Feed server not responding: Not HTTP OK', color=0x800000)
+                        await msg.channel.send(None, embed=status)
+                        return
+            except asyncio.TimeoutError:
+                await msg.channel.send('Feed server not responding: Timed out')
                 return
+                    
+        status = discord.Embed(title='Feed server ok', color=0x008000)
+        await msg.channel.send(None, embed=status)
+        return
 
 
     @staticmethod

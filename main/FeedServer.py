@@ -142,7 +142,7 @@ class FeedServer():
         #    FeedServer.app.run()
         #else:
         FeedServer.logger.info('Initializing server: 127.0.0.1:5001')
-        FeedServer.http_server = UvicornServerPatch(uvicorn.Config(app=FeedServer.app, host='127.0.0.1', port=5001, log_level='debug'))
+        FeedServer.http_server = UvicornServerPatch(uvicorn.Config(app=FeedServer.app, host='127.0.0.1', port=config.feed_server_port, log_level='debug'))
         await FeedServer.http_server.serve()
 
 
