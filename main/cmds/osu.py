@@ -7,6 +7,7 @@ import warnings
 import tinydb
 from tinydb.table import Document
 
+import time
 import datetime
 import config
 
@@ -85,15 +86,16 @@ class CmdsOsu:
 
 
     @staticmethod
-    async def __handle_data(self: DiscordBot, data):
+    async def __handle_data(self: DiscordBot, data: dict):
         new_link = f'https://osu.ppy.sh/community/forums/posts/{data["post_id"]}'
 
         avatar_url = data['avatar'] if data['avatar'] != '' else None
         user_url   = data['user_profile'] if data['user_profile'] != '' else None
+        timestamp  = time.mktime(
+            datetime.datetime.strptime(data['time'].split('+')[0], '%Y-%m-%d %H:%M:%S')
+        )
 
-        print(data['time'])
-
-        embed = discord.Embed(color=0x1ABC9C, timestamp=parse(data['time']))
+        embed = discord.Embed(color=0x1ABC9C, timestamp=timestamp)
         embed.set_author(name=data['user'], url=user_url, icon_url=avatar_url)
         embed.add_field(name=data['thread_title'], value=new_link)
 
@@ -112,11 +114,12 @@ class CmdsOsu:
                         CmdsOsu.__ot_feed_ch_cache = channel
                         await channel.send(embed=embed)
                         return
-
-            warnings.warn(f'No "{ot_feed_channel}" channel found!')
         except Exception as e:
             warnings.warn(
-                f'Unable to send message to ot-feed;\n'
+                f'Unable to send message to #"{ot_feed_channel}";\n'
                 f'{data}\n'
                 f'{e}\n'
             )
+            return
+        
+        warnings.warn(f'No #"{ot_feed_channel}" channel found!')
