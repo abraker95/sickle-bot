@@ -258,6 +258,7 @@ class DiscordBot(discord.Client):
         # Present as ready
         self.__logger.info(f'Ready!')
         await self.change_presence(activity=discord.Game(':bat:'), status=discord.Status.online)
+        await self.__report('Discord loop started')
 
 
     def get_prev_msg(self, channel_id: int) -> Optional[discord.Message]:
