@@ -7,7 +7,6 @@ import warnings
 import tinydb
 from tinydb.table import Document
 
-import time
 import datetime
 import config
 
@@ -91,9 +90,7 @@ class CmdsOsu:
 
         avatar_url = data['avatar'] if data['avatar'] != '' else None
         user_url   = data['user_profile'] if data['user_profile'] != '' else None
-        timestamp  = time.mktime(
-            datetime.datetime.strptime(data['time'].split('+')[0], '%Y-%m-%d %H:%M:%S')
-        )
+        timestamp  = datetime.datetime.strptime(data['time'].split('+')[0], '%Y-%m-%d %H:%M:%S')
 
         embed = discord.Embed(color=0x1ABC9C, timestamp=timestamp)
         embed.set_author(name=data['user'], url=user_url, icon_url=avatar_url)
