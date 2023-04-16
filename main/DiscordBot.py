@@ -19,6 +19,7 @@ import config
 from main.db_middleware import DbThreadSafeMiddleware
 
 from main.cmds.admin import CmdsAdmin
+from main.utils import Utils
 
 
 
@@ -292,23 +293,11 @@ class DiscordBot(discord.Client):
         with warnings.catch_warnings(record=True) as w:
             try: await self._cmds[cmd]['func'](self, msg, *args)
             except Exception as e:
-                frames = traceback.extract_tb(e.__traceback__)
-
-                err = ''
-                for frame in frames:
-                    file = frame.filename.split('\\')[-1]
-                    err += f'  {file}, line {frame.lineno} in {frame.name}\n'
-                err += f'    {frames[-1].line}'
-
-                self.__logger.error(f'{e}\n{err}')
-
-                # Sanitize backticks
-                err = err.replace('```', '`​`​`')
+                err = Utils.format_exception(e)
 
                 await self.__report(
                     f'[ ERROR ]\n'
                     f'{msg.guild.name}:#{msg.channel.name} @{msg.author.name} | "{config.cmd_prefix}{cmd} {" ".join(args)}"\n'
-                    f'Raised {type(e)}: {e}\n'
                     f'{err}\n'
                 )
 
@@ -327,7 +316,7 @@ class DiscordBot(discord.Client):
             w.clear()
 
 
-    async def __report(self, msg, log=True):
+    async def __report(self, msg: str, log: bool = True):
         if log:
             self.__logger.warn(msg)
 
@@ -341,7 +330,8 @@ class DiscordBot(discord.Client):
 
         try: await self.__dbg_ch.send(
             '```\n'
-            f'{msg}'
+            # Sanitize backticks
+            f'{msg.replace("```", "`​`​`")}'
             '```'
         )
         except discord.errors.HTTPException as e:

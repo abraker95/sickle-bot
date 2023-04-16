@@ -1,5 +1,21 @@
 import typing
-import functools
+import traceback
+
+
+
+class Utils():
+
+    @staticmethod
+    def format_exception(ex: Exception):
+        frames = traceback.extract_tb(ex.__traceback__)
+
+        err = f'Raised {type(ex)}: {ex}\n'
+        for frame in frames:
+            file = frame.filename.split('\\')[-1]
+            err += f'  {file}, line {frame.lineno} in {frame.name}\n'
+        err += f'    {frames[-1].line}'
+
+        return err
 
 
 class DiscordCmdBase():
