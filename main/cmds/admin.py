@@ -76,6 +76,8 @@ class CmdsAdmin:
     )
     async def evaluate(self: DiscordBot, msg: discord.Message, *args: str):
         if msg.author.id != config.admin_user_id: 
+            status = discord.Embed(title='You must be the bot admin to use this command', color=0x800000)
+            await msg.channel.send(None, embed=status)
             return
 
         # TODO
