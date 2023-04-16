@@ -3,27 +3,29 @@ from typing import Optional
 import os
 import importlib
 import inspect
-import traceback
 import warnings
 
 import logging
 import asyncio
 import aiohttp
-import tinydb
 import threading
-import queue
 
 import discord
 
-import config
+import tinydb
+from tinydb.table import Document
 from main.db_middleware import DbThreadSafeMiddleware
 
-from main.cmds.admin import CmdsAdmin
+import config
 from main.utils import Utils
 
 
 
 class DiscordBot(discord.Client):
+
+    __MSG_TYPE_TOTAL = 0
+    __MSG_TYPE_USERS = 1
+    __MSG_TYPE_CMDS  = 2
 
     def __init__(self):
         intents = discord.Intents.default()
@@ -89,21 +91,24 @@ class DiscordBot(discord.Client):
 
     async def on_message(self, msg: discord.Message):
         try:
-            # TODO: Apply general message stat
-
             try: self.__prev_msg[msg.channel.id] = self.__curr_msg[msg.channel.id]
             except KeyError:
                 pass
 
             self.__curr_msg[msg.channel.id] = msg
+            self.__db_inc_msgs(msg, DiscordBot.__MSG_TYPE_TOTAL)
 
             if msg.author.bot:
                 # Don't respond to bots
                 return
 
+            self.__db_inc_msgs(msg, DiscordBot.__MSG_TYPE_USERS)
+
             if not msg.content.startswith(config.cmd_prefix):
                 # Responding to commands only
                 return
+
+            self.__db_inc_msgs(msg, DiscordBot.__MSG_TYPE_CMDS)
 
             if not msg.author.guild_permissions.manage_channels:
                 table = self.get_db_table('bot_en')
@@ -133,16 +138,11 @@ class DiscordBot(discord.Client):
                 return
 
             self.__bot_loop.create_task(self.__exec_cmd(cmd, msg, args))
-
-            # TODO: Apply command message stat
             self.__logger.debug(f'{cmd}:@{msg.author.name} -> {msg.guild.name}:#{msg.channel.name}')
         except Exception as e:
-            self.__logger.error(f'Unable to process `on_message` - {type(e)}: {e}')
-            await self.__dbg_ch.send(
-                '```\n'
+            await self.__report(
                 f'Error: `on_message` crash\n'
-                f'Raised {type(e)}: {e}\n\n'
-                '```'
+                f'{Utils.format_exception(e)}'
             )
 
 
@@ -350,3 +350,33 @@ class DiscordBot(discord.Client):
                 f'Msg:\n'
                 f'    {msg}\n'
             )
+
+
+    def __db_inc_msgs(self, msg: discord.Message, msg_type: int):
+        """
+        Data fmt:
+            "bot_stats" : {
+                (msg.guild.id: str) : {
+                    "total_msgs" : (int),
+                    "user_msgs"  : (int),
+                    "total_cmds" : (int),
+                }
+            }
+        """
+        table = self.get_db_table('bot_stats')
+        entry = table.get(doc_id=msg.guild.id)
+
+        if isinstance(entry, type(None)):
+            data = {
+                'total_msgs' : 1 if msg_type == DiscordBot.__MSG_TYPE_TOTAL else 0,
+                'user_msgs'  : 1 if msg_type == DiscordBot.__MSG_TYPE_USERS else 0,
+                'total_cmds' : 1 if msg_type == DiscordBot.__MSG_TYPE_CMDS  else 0,
+            }
+            table.insert(Document(data, doc_id=msg.guild.id))
+            return
+
+        if msg_type == DiscordBot.__MSG_TYPE_TOTAL: entry['total_msgs'] += 1
+        if msg_type == DiscordBot.__MSG_TYPE_USERS: entry['user_msgs'] += 1
+        if msg_type == DiscordBot.__MSG_TYPE_CMDS:  entry['total_cmds'] += 1
+
+        table.update(entry)

@@ -90,3 +90,46 @@ class CmdsAdmin:
 
         # TODO
         pass
+
+
+    @staticmethod
+    @DiscordCmdBase.DiscordCmd(
+        example = f'{config.cmd_prefix}bot.stats',
+        help    = 
+            'Prints this bots\'s stats'
+    )
+    async def bot_stats(self: DiscordBot, msg: discord.Message, *args: str):
+        """
+        Data fmt:
+            "bot_stats" : {
+                (msg.guild.id: str) : {
+                    "total_msgs" : (int),
+                    "user_msgs"  : (int),
+                    "total_cmds" : (int),
+                }
+            }
+        """
+        if msg.author.id != config.admin_user_id: 
+            status = discord.Embed(title='You must be the bot admin to use this command', color=0x800000)
+            await msg.channel.send(None, embed=status)
+            return
+
+        table = self.get_db_table('bot_stats')
+        entry = table.get(doc_id=msg.guild.id)
+
+        if isinstance(entry, type(None)):
+            status = discord.Embed(title='Bot has no stats saved', color=0x008000)
+            await msg.channel.send(None, embed=status)
+            return
+
+        stats_str = (
+            f'Server ID:            {msg.guild.id}\n'
+            f'Total msgs processed: {entry["total_msgs"]}\n'
+            f'User msgs processed:  {entry["user_msgs"]}\n'
+            f'Commands processed:   {entry["total_cmds"]}\n'
+        )
+
+        reply = discord.Embed(color=0x1abc9c)
+        reply.add_field(name=f'Stats', value=f'```yaml\n{stats_str}```')
+        await msg.channel.send(None, embed=reply)
+
