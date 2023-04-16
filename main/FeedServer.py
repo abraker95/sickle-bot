@@ -160,19 +160,17 @@ class FeedServer():
             return { 'status' : 'err' }
 
         data = await data.body()
-        print(data)
+        FeedServer.logger.debug(f'Internal command: {data}')
 
-        try:
-            #data = flask.request.get_json()
-            FeedServer.logger.debug(f'Internal command: {data}')
-
-            if 'shutdown' in data:
+        if 'shutdown' in data:
+            try: 
                 await FeedServer.http_server.shutdown()
-        except Exception as e:
-            FeedServer.logger.error(f'Error parsing data: {e}')
-            return { 'status' : 'err' }
+                return { 'status' : 'ok' }
+            except Exception as e:
+                FeedServer.logger.error(f'Error parsing data: {e}')
+                return { 'status' : 'err' }
 
-        return { 'status' : 'ok' }
+        return { 'status' : 'err' }
 
 
     @staticmethod
@@ -182,7 +180,6 @@ class FeedServer():
             return { 'status' : 'err' }
 
         data = await data.body()
-        print(data)
 
         try:
             await FeedServer.callback({
