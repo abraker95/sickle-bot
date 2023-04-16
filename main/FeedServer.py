@@ -10,6 +10,8 @@ import logging
 import fastapi
 import config
 
+from main.utils import Utils
+
 
 class UvicornServerPatch(uvicorn.Server):
     """
@@ -130,17 +132,11 @@ class FeedServer():
 
     @staticmethod
     async def init(callback):
-        #is_debug = 'db' in config.runtime_mode
+        is_debug = 'db' in config.runtime_mode
         #FeedServer.app.config['DEBUG'] = is_debug
         FeedServer.callback = callback
         FeedServer.logger = logging.getLogger('FeedServer')
 
-        # Unsupported for now because discord dispatch events act weird when this is done
-        #if is_debug:
-        #    FeedServer.logger.info(f'Discord feed server version {FeedServer._version}')
-        #    FeedServer.logger.info('Initializing debug server...')
-        #    FeedServer.app.run()
-        #else:
         FeedServer.logger.info('Initializing server: 127.0.0.1:5001')
         FeedServer.http_server = UvicornServerPatch(uvicorn.Config(app=FeedServer.app, host='127.0.0.1', port=config.feed_server_port, log_level='debug'))
         await FeedServer.http_server.serve()
@@ -159,15 +155,18 @@ class FeedServer():
         if FeedServer.callback is None:
             return { 'status' : 'err' }
 
-        data = await data.body()
+        data = await data.json()
         FeedServer.logger.debug(f'Internal command: {data}')
 
         if 'shutdown' in data:
-            try: 
+            try:
                 await FeedServer.http_server.shutdown()
                 return { 'status' : 'ok' }
             except Exception as e:
-                FeedServer.logger.error(f'Error parsing data: {e}')
+                FeedServer.logger.error(
+                    f'Error processing "/internal": {type(e)}\n'
+                    f'{Utils.format_exception(e)}'
+                )
                 return { 'status' : 'err' }
 
         return { 'status' : 'err' }
@@ -179,15 +178,21 @@ class FeedServer():
         if FeedServer.callback is None:
             return { 'status' : 'err' }
 
-        data = await data.body()
+        data = await data.json()
 
         try:
-            await FeedServer.callback({
-                'type' : 'post',
-                'data' : data
-            })
+            await FeedServer.callback(data)
+        except KeyError as e:
+            FeedServer.logger.error(
+                f'Error processing "/post":\n'
+                f'Raised {type(e)}: {e}\n'
+                f'Data: {data}'
+            )
         except Exception as e:
-            FeedServer.logger.error(f'Error queuing data: {e}')
+            FeedServer.logger.error(
+                f'Error processing "/post":\n'
+                f'{Utils.format_exception(e)}'
+            )
             return { 'status' : 'err' }
 
         return { 'status' : 'ok' }
