@@ -33,6 +33,7 @@ class DiscordBot(discord.Client):
         self.__logger.info('DiscordBot initializing...')
 
         self._cmds = {}
+        self._events = {}
         self._modules = {}
 
         self.__dbg_ch = None
@@ -40,7 +41,6 @@ class DiscordBot(discord.Client):
         self.__prev_msg = {}
 
         self.__is_connected = False
-        self.__queue = queue.Queue()
         self.__db = tinydb.TinyDB('db.json', storage=DbThreadSafeMiddleware(tinydb.JSONStorage))
 
         # Needed for misc commands that upload images, downloads, etc
@@ -191,6 +191,7 @@ class DiscordBot(discord.Client):
                 if isinstance(member, dict):
                     if not 'func'    in member: continue
                     if not 'example' in member: continue
+                    if not 'type'    in member: continue
                     if not 'help'    in member: continue
 
                     # Underscores '_' in command names don't look nice
@@ -198,8 +199,13 @@ class DiscordBot(discord.Client):
                     name = name.replace('_', '.')
 
                     self.__logger.info(f'    {name}')
-                    self._cmds[name] = member
-                    self._modules[module_file].append(name)
+
+                    if member['type'] == 'cmd':
+                        self._cmds[name] = member
+                        self._modules[module_file].append(name)
+                    
+                    if member['type'] == 'event':
+                        self._events[name] = member
 
                     continue
 
@@ -225,10 +231,10 @@ class DiscordBot(discord.Client):
     async def on_ready(self):
         await self.wait_until_ready()
 
+        # Look for debug channel where errors would get posted
         self.__logger.info(f'Looking for debug channel...')
         self.__dbg_ch = None
 
-        # Look for debug channel where errors would get posted
         for channel in self.get_all_channels():
             if channel.id == config.debug_channel:
                 self.__dbg_ch = channel
@@ -238,12 +244,15 @@ class DiscordBot(discord.Client):
         else:
             self.__logger.info(f'Debug channel found!')
 
+        # Run events
+        self.__logger.info('Initializing events...')
+        for name, event in self._events.items():
+            self.__logger.info(f'    {name}')
+            self.__bot_loop.create_task(event['func'](self))
+
+        # Present as ready
         self.__logger.info(f'Ready!')
         await self.change_presence(activity=discord.Game(':bat:'), status=discord.Status.online)
-
-
-    def queue_data(self, data):
-        self.__queue.put(data)
 
 
     def get_prev_msg(self, channel_id: int) -> Optional[discord.Message]:
