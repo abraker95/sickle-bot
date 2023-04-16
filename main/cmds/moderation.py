@@ -16,6 +16,15 @@ class CmdsModeration:
             'Enable/Disable the bot in the channel.'
     )
     async def bot_en(self: DiscordBot, msg: discord.Message, *args: str):
+        """
+        Data fmt:
+            "bot_en": {
+                (msg.channel.id: str): {
+                    "chan_en": (en: bool)
+                },
+                ...
+            }
+        """
         if not msg.author.guild_permissions.manage_channels:
             embed = discord.Embed(type='rich', color=0xFF9900, title='⚠ Error')
             embed.add_field(name='Insufficient permissions', value=f'You need the manage channel permission to use this command')

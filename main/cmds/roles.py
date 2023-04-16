@@ -168,6 +168,17 @@ class CmdsRoles:
             'to have the Manage Roles permision.'
     )
     async def addselfrole(self: DiscordBot, msg: discord.Message, *args: str):
+        """
+        Data fmt:
+            "self_roles": {
+                (id: str): {
+                    "server":    (msg.guild.id: int), 
+                    "role_id":   (msg.guild.roles[i].id: int), 
+                    "role_name": (msg.guild.roles[i].name: int)
+                },
+                ...
+            }
+        """
         if len(args) != 1:
             await self.run_help_cmd(msg, 'addselfrole')
             return
@@ -210,6 +221,17 @@ class CmdsRoles:
             'command to have the Manage Roles permision.'
     )
     async def delselfrole(self: DiscordBot, msg: discord.Message, *args: str):
+        """
+        Data fmt:
+            "self_roles": {
+                (id: str): {
+                    "server":    (msg.guild.id: int), 
+                    "role_id":   (msg.guild.roles[i].id: int), 
+                    "role_name": (msg.guild.roles[i].name: int)
+                },
+                ...
+            }
+        """
         if len(args) != 1:
             await self.run_help_cmd(msg, 'delselfrole')
             return
@@ -247,6 +269,37 @@ class CmdsRoles:
         embed = discord.Embed(title=f'Removed {role_name} from self roles', color=0x1ABC9C)
         await msg.channel.send(None, embed=embed)
 
+
+    @staticmethod
+    @DiscordCmdBase.DiscordCmd(
+        example = f'{config.cmd_prefix}selfroles',
+        help    = 
+            'Lists all the roles the user can assign to themselves, or another user can assign to themselves.'
+    )   
+    async def selfroles(self: DiscordBot, msg: discord.Message, *args: str):
+        """
+        Data fmt:
+            "self_roles": {
+                (id: str): {
+                    "server":    (msg.guild.id: int), 
+                    "role_id":   (msg.guild.roles[i].id: int), 
+                    "role_name": (msg.guild.roles[i].name: int)
+                },
+                ...
+            }
+        """
+        table = self.get_db_table('self_roles')
+        results = table.search(tinydb.Query().fragment({ 'server' : msg.guild.id }))
+                
+        role_list = '\n'.join([ role['role_name'] for role in results ])
+        
+        if len(role_list) > 1800:
+            role_list = role_list[:1800] + '...'
+
+        embed = discord.Embed(color=0x1ABC9C)
+        embed.add_field(name=f'Self assignable roles:', value=f'```\n{role_list}\n```')
+        await msg.channel.send(None, embed=embed)
+
     
     @staticmethod
     @DiscordCmdBase.DiscordCmd(
@@ -265,22 +318,3 @@ class CmdsRoles:
         embed.add_field(name=f'There Are {len(roles_names)} roles on {msg.guild.name}', value=f'```\n{role_list}\n```')
         await msg.channel.send(None, embed=embed)
 
-
-    @staticmethod
-    @DiscordCmdBase.DiscordCmd(
-        example = f'{config.cmd_prefix}selfroles',
-        help    = 
-            'Lists all the roles the user can assign to themselves, or another user can assign to themselves.'
-    )   
-    async def selfroles(self: DiscordBot, msg: discord.Message, *args: str):
-        table = self.get_db_table('self_roles')
-        results = table.search(tinydb.Query().fragment({ 'server' : msg.guild.id }))
-                
-        role_list = '\n'.join([ role['role_name'] for role in results ])
-        
-        if len(role_list) > 1800:
-            role_list = role_list[:1800] + '...'
-
-        embed = discord.Embed(color=0x1ABC9C)
-        embed.add_field(name=f'Self assignable roles:', value=f'```\n{role_list}\n```')
-        await msg.channel.send(None, embed=embed)
