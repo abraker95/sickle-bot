@@ -15,6 +15,9 @@ from main.FeedServer import FeedServer
 
 class CmdsOsu:
 
+    # Cache for quicker access
+    __ot_feed_ch_cache = None
+
     @DiscordCmdBase.DiscordCmd(
         example = f'{config.cmd_prefix}forum.bot <cmd>',
         help    = 
@@ -93,14 +96,23 @@ class CmdsOsu:
         embed.set_author(name=data['user'], url=user_url, icon_url=avatar_url)
         embed.add_field(name=data['thread_title'], value=new_link)
 
+        ot_feed_channel = 'debug-ot-feed' if 'db' in config.runtime_mode else 'ot-feed'
+
         try:
+            # If channel is cached
+            if not isinstance(CmdsOsu.__ot_feed_ch_cache, type(None)):
+                await CmdsOsu.__ot_feed_ch_cache.send(embed=embed)
+                return
+
+            # Otherwise look for it
             for server in self.guilds:
                 for channel in server.channels:
-                    if channel.name == 'ot-feed':
+                    if channel.name == ot_feed_channel:
+                        CmdsOsu.__ot_feed_ch_cache = channel
                         await channel.send(embed=embed)
                         return
 
-            warnings.warn('No ot-feed channel found!')
+            warnings.warn(f'No "{ot_feed_channel}" channel found!')
         except Exception as e:
             warnings.warn(
                 f'Unable to send message to ot-feed;\n'
