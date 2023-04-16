@@ -146,44 +146,51 @@ class FeedServer():
         await FeedServer.http_server.serve()
 
 
-
-@FeedServer.app.put('/ping')  # type: ignore
-async def ping():
-    FeedServer.logger.info('Pong')
-    return { 'status' : 'ok' }
-
-
-@FeedServer.app.put('/internal')  # type: ignore
-async def shutdown(data: dict):
-    if FeedServer.callback is None:
-        return
-
-    try:
-        #data = flask.request.get_json()
-        FeedServer.logger.debug(f'Internal command: {data}')
-
-        if 'shutdown' in data:
-            await FeedServer.http_server.shutdown()
-    except Exception as e:
-        FeedServer.logger.error(f'Error parsing data: {e}')
-        return { 'status' : 'err' }
-
-    return { 'status' : 'ok' }
+    @staticmethod
+    @app.put('/ping')  # type: ignore
+    async def ping():
+        FeedServer.logger.info('Pong')
+        return { 'status' : 'ok' }
 
 
-@FeedServer.app.post('/post')  # type: ignore
-async def handle_post(data: dict):
-    if FeedServer.callback is None:
-        return
+    @staticmethod
+    @app.put('/internal')  # type: ignore
+    async def shutdown(data: fastapi.Request):
+        if FeedServer.callback is None:
+            return { 'status' : 'err' }
 
-    try:
-        #data = flask.request.get_json()
-        FeedServer.callback({
-            'type' : 'post',
-            'data' : data
-        })
-    except Exception as e:
-        FeedServer.logger.error(f'Error queuing data: {e}')
-        return { 'status' : 'err' }
+        data = await data.body()
+        print(data)
 
-    return { 'status' : 'ok' }
+        try:
+            #data = flask.request.get_json()
+            FeedServer.logger.debug(f'Internal command: {data}')
+
+            if 'shutdown' in data:
+                await FeedServer.http_server.shutdown()
+        except Exception as e:
+            FeedServer.logger.error(f'Error parsing data: {e}')
+            return { 'status' : 'err' }
+
+        return { 'status' : 'ok' }
+
+
+    @staticmethod
+    @app.post('/post')  # type: ignore
+    async def handle_post(data: fastapi.Request):
+        if FeedServer.callback is None:
+            return { 'status' : 'err' }
+
+        data = await data.body()
+        print(data)
+
+        try:
+            await FeedServer.callback({
+                'type' : 'post',
+                'data' : data
+            })
+        except Exception as e:
+            FeedServer.logger.error(f'Error queuing data: {e}')
+            return { 'status' : 'err' }
+
+        return { 'status' : 'ok' }
