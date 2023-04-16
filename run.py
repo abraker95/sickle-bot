@@ -5,9 +5,10 @@ if sys.version_info < (3, 8):
     sys.exit(1)
 
 import traceback
+import time
+import config
 
 from main.DiscordBot import DiscordBot
-from main.FeedServer import FeedServer
 
 import logging
 from main.Logger import Logger
@@ -28,4 +29,8 @@ sys.excepthook = exception_hook
 
 if __name__ == '__main__':
     discord_bot = DiscordBot()
-    FeedServer.init(discord_bot.queue_data)
+
+    while not discord_bot.is_closed():
+        try: time.sleep(1)
+        except KeyboardInterrupt:
+            config.runtime_quit = True

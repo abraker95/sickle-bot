@@ -1,7 +1,7 @@
 discord.py
 tinydb
-flask
-gevent
+fastapi
+uvicorn
 requests
 validators
 

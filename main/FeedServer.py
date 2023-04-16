@@ -1,18 +1,15 @@
-import logging
-import flask
-import socket
-import sys
-from gevent.pywsgi import WSGIServer
+import uvicorn
 
-import config
+import logging
+import fastapi
 
 
 class FeedServer():
 
-    app = flask.Flask(__name__)
+    app = fastapi.FastAPI()
 
     @staticmethod
-    def init(callback):
+    async def init(callback):
         #is_debug = 'db' in config.runtime_mode
         #FeedServer.app.config['DEBUG'] = is_debug
         FeedServer.callback = callback
@@ -25,32 +22,28 @@ class FeedServer():
         #    FeedServer.app.run()
         #else:
         FeedServer.logger.info('Initializing server: 127.0.0.1:5000')
-        FeedServer.http_server = WSGIServer(('127.0.0.1', 5000), FeedServer.app)
-
-        try:
-            FeedServer.http_server.serve_forever()
-        except KeyboardInterrupt:
-            config.runtime_quit = True
-            FeedServer.logger.info('Exiting server loop...')
-            return
-        except Exception as e:
-            FeedServer.logger.exception('Error in server loop!')
-            raise e
+        FeedServer.http_server = uvicorn.Server(uvicorn.Config(app=FeedServer.app, host='127.0.0.1', port=5000, log_level='debug'))
+        await FeedServer.http_server.serve()
 
 
 
+@FeedServer.app.put('/ping')  # type: ignore
+async def ping():
+    FeedServer.logger.info('Pong')
+    return { 'status' : 'ok' }
 
-@FeedServer.app.route('/internal', methods=['PUT'])  # type: ignore
-def shutdown():
+
+@FeedServer.app.put('/internal')  # type: ignore
+async def shutdown(data: dict):
     if FeedServer.callback is None:
         return
 
     try:
-        data = flask.request.get_json()
+        #data = flask.request.get_json()
         FeedServer.logger.debug(f'Internal command: {data}')
 
         if 'shutdown' in data:
-            FeedServer.http_server.close()
+            await FeedServer.http_server.shutdown()
     except Exception as e:
         FeedServer.logger.error(f'Error parsing data: {e}')
         return { 'status' : 'err' }
@@ -58,13 +51,13 @@ def shutdown():
     return { 'status' : 'ok' }
 
 
-@FeedServer.app.route('/post', methods=['POST'])  # type: ignore
-def handle_post():
+@FeedServer.app.post('/post')  # type: ignore
+async def handle_post(data: dict):
     if FeedServer.callback is None:
         return
 
     try:
-        data = flask.request.get_json()
+        #data = flask.request.get_json()
         FeedServer.callback({
             'type' : 'post',
             'data' : data
