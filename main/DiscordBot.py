@@ -177,7 +177,11 @@ class DiscordBot(discord.Client):
 
         for module_file in module_files:
             self.__logger.info(f'Importing {module_file}')
-            module = importlib.import_module(f'main.cmds.{module_file}')
+
+            try: module = importlib.import_module(f'main.cmds.{module_file}')
+            except Exception as e:
+                self.__logger.error(f'   error importing: {e}')
+                continue
 
             self._modules[module_file] = []
 
