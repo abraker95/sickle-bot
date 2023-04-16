@@ -1,7 +1,8 @@
 import discord
 import config
-import requests
+import aiohttp
 import asyncio
+import warnings
 
 from main import DiscordCmdBase, DiscordBot
 
@@ -29,10 +30,42 @@ class CmdsAdmin:
         # Shutdown the discord client
         await self.close()
 
-        # Shutdown the Feed server as well
-        requests.put('http://127.0.0.1:5000/internal', json={
-            'shutdown' : True
-        })
+        async with aiohttp.ClientSession() as session:
+            # Shutdown the Feed server as well
+            async with session.put('http://127.0.0.1:5000/internal', timeout=1, json={
+                'shutdown' : True
+            }) as response:
+                if response.status != 200:
+                    warnings.warn('Could not contact feed server')
+                    return
+
+                data = await response.json()
+                if data['status'] != 'ok':
+                    warnings.warn('Feed server shutdown failed')
+                    return
+
+
+    @DiscordCmdBase.DiscordCmd(
+        example = f'{config.cmd_prefix}feed.ping',
+        help    = 
+            'Pings the feed server.'
+    )
+    async def feed_ping(self: DiscordBot, msg: discord.Message, *args: str):
+        if msg.author.id != config.admin_user_id:
+            status = discord.Embed(title='You must be the bot admin to use this command', color=0x800000)
+            await msg.channel.send(None, embed=status)
+            return
+
+        async with aiohttp.ClientSession() as session:
+            async with session.put('http://127.0.0.1:5000/ping', timeout=1) as response:
+                if response.status != 200:
+                    status = discord.Embed(title='Feed server not responding', color=0x800000)
+                    await msg.channel.send(None, embed=status)
+                    return
+                
+                status = discord.Embed(title='Feed server ok', color=0x008000)
+                await msg.channel.send(None, embed=status)
+                return
 
 
     @staticmethod
