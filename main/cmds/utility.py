@@ -83,7 +83,8 @@ class CmdsUtility:
             'just prints "pong!". Useful to know if the bot is up'
     )
     async def ping(self: DiscordBot, msg: discord.Message, *args: str):
-        reply = discord.Embed(title='Pong!', color=0x0099FF)
+        ms = 1000*(datetime.datetime.now().timestamp() - msg.created_at.timestamp())
+        reply = discord.Embed(title=f'Pong! ({ms:.2f} ms)', color=0x0099FF)
         await msg.channel.send(None, embed=reply)
 
 
