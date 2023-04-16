@@ -328,6 +328,8 @@ class DiscordBot(discord.Client):
                             f'Raised {type(e)}: {e}\n\n'
                             '```'
                         )
+                except RuntimeError as e:
+                    self.__logger.warn(f'Unable to send error message to debug channel | {e}')
 
             # Process warnings
             for warning in w:
@@ -353,6 +355,8 @@ class DiscordBot(discord.Client):
                             f'Warning: Attempted to send malformed message. Error contents will be available in logs\n'
                             '```'
                         )
+                except RuntimeError as e:
+                    self.__logger.warn(f'Unable to send warning message to debug channel | {e}')
 
             w.clear()
 
