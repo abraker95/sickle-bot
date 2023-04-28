@@ -30,10 +30,29 @@ class CmdsUtility:
         if isinstance(cmd, type(None)):
             embed = discord.Embed(type='rich', title='❔Help❔', color=0x2cefe5)
 
-            embed.add_field(name=' Sickle\'s Module List', value='```yaml\n' + '\n'.join(self._modules) + '\n```', inline=True)
+            embed.add_field(
+                name  = 'Sickle\'s Module List',
+                value = (
+                    '```yaml\n'
+                    f'{"\n".join(self._modules)}\n'
+                    '```'
+                ),
+                inline = True
+            )
             embed.add_field(name='Please submit bugs, issues, or suggestions here.', value='[**LINK**](https://github.com/abraker95/sickle-bot/issues)', inline=True)
             embed.add_field(name='Add me to your server!', value='[**LINK**](https://discordapp.com/oauth2/authorize?&client_id=290355925317976074&scope=bot&permissions=0)', inline=True)
-            embed.add_field(name='Sickle in its natural habitat', value='⠀⠀⠀⠀⠀⠀⠀⠀⠀⣿⠀ ⠀⠀⠀⠀⠀⠀⠀⠀⠀⣿\n'+'⠀⠀⠀⠀⣿⣿⣿⣿⠀⠀⠀⠀⠀⠀⣄ ⣠⠀⠀⠀⠀⠀⣿⣿⣿⣿\n'+'⠀⠀⣿⣿⣿⣿⣿⣿⣿⠀⠀⠀⠀⣿⣿⣿⠀⠀⠀⠀⣿⣿⣿⣿⣿⣿⣿\n'+'⣿⠋⠀⠀⠀⠀⠀⠀⠀⠙⣿⣿⣿⣿⣿⣿⣿⠋⠈⠀⠀⠀⠀⠀⠀⠀⠙⣿\n'+'⠀⠈⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣿⣿⣿⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈\n'+'⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠀⠀⠀⠈', inline=True)
+            embed.add_field(
+                name  = 'Sickle in its natural habitat',
+                value = (
+                    '⠀⠀⠀⠀⠀⠀⠀⠀⠀⣿⠀ ⠀⠀⠀⠀⠀⠀⠀⠀⠀⣿\n'
+                    '⠀⠀⠀⠀⣿⣿⣿⣿⠀⠀⠀⠀⠀⠀⣄ ⣠⠀⠀⠀⠀⠀⣿⣿⣿⣿\n'
+                    '⠀⠀⣿⣿⣿⣿⣿⣿⣿⠀⠀⠀⠀⣿⣿⣿⠀⠀⠀⠀⣿⣿⣿⣿⣿⣿⣿\n'
+                    '⣿⠋⠀⠀⠀⠀⠀⠀⠀⠙⣿⣿⣿⣿⣿⣿⣿⠋⠈⠀⠀⠀⠀⠀⠀⠀⠙⣿\n'
+                    '⠀⠈⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣿⣿⣿⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈\n'
+                    '⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠀⠀⠀⠈'
+                ),
+                inline = True
+            )
 
             embed.set_footer(text=f'Use {config.cmd_prefix}commands <module> to get a list of commands available in that module.\n Use {config.cmd_prefix}help <command> to get a description about the command usage.')
             embed.set_image(url='https://i.imgur.com/UOzJ31H.png')
@@ -43,16 +62,18 @@ class CmdsUtility:
 
         if cmd not in self._cmds:
             embed = discord.Embed(type='rich', color=0x696969, title='🔍 No such command was found...')
-        else:
-            embed = discord.Embed(title=f':book: HELP {cmd}', color=0x1B6F5F)
-            embed.add_field(
-                name = 'Command Usage Example and Information',
-                value =
-                    f"Example: `{self._cmds[cmd]['example']}`\n"
-                    "```\n"
-                    f"{self._cmds[cmd]['help']}\n"
-                    "```"
-            )
+            await msg.channel.send(None, embed=embed)
+            return
+
+        embed = discord.Embed(title=f':book: HELP {cmd}', color=0x1B6F5F)
+        embed.add_field(
+            name = 'Command Usage Example and Information',
+            value =
+                f'Example: `{self._cmds[cmd]["example"]}`\n'
+                '```\n'
+                f'{self._cmds[cmd]["help"]}\n'
+                '```'
+        )
 
         await msg.channel.send(None, embed=embed)
 
