@@ -28,13 +28,15 @@ class CmdsUtility:
     )
     async def help(self: DiscordBot, msg: discord.Message, cmd: Optional[str] = None, *args: str):
         if isinstance(cmd, type(None)):
+            modules_text = '\n'.join(self._modules)
+
             embed = discord.Embed(type='rich', title='❔Help❔', color=0x2cefe5)
 
             embed.add_field(
                 name  = 'Sickle\'s Module List',
                 value = (
                     '```yaml\n'
-                    f'{"\n".join(self._modules)}\n'
+                    f'{modules_text}' + '\n'
                     '```'
                 ),
                 inline = True
@@ -115,20 +117,6 @@ class CmdsUtility:
 
     @staticmethod
     @DiscordCmdBase.DiscordCmd(
-        example = f'{config.cmd_prefix}uid @person',
-        help    =
-            'Shows the User ID of the mentioned user. If no user is mentioned, it will show your ID instead.'
-    )
-    async def uid(self: DiscordBot, msg: discord.Message, *args: str):
-        user = msg.mentions[0] if msg.mentions else msg.author
-
-        embed = discord.Embed(color=0x0099FF)
-        embed.add_field(name='ℹ ' + user.name, value=f'`{user.id}`')
-        await msg.channel.send(None, embed=embed)
-
-
-    @staticmethod
-    @DiscordCmdBase.DiscordCmd(
         example = f'{config.cmd_prefix}color #1ABC9C',
         help    =
             'Generates a color from the given HEX code or provided RGB numbers.'
@@ -176,6 +164,20 @@ class CmdsUtility:
 
         embed = discord.Embed(color=target.color)
         embed.set_image(url=target.avatar.url)
+        await msg.channel.send(None, embed=embed)
+
+
+    @staticmethod
+    @DiscordCmdBase.DiscordCmd(
+        example = f'{config.cmd_prefix}uid @person',
+        help    =
+            'Shows the User ID of the mentioned user. If no user is mentioned, it will show your ID instead.'
+    )
+    async def uid(self: DiscordBot, msg: discord.Message, *args: str):
+        user = msg.mentions[0] if msg.mentions else msg.author
+
+        embed = discord.Embed(color=user.color)
+        embed.add_field(name=user.name, value=f'`{user.id}`')
         await msg.channel.send(None, embed=embed)
 
 

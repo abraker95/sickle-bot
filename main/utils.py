@@ -2,7 +2,6 @@ import typing
 import traceback
 
 
-
 class Utils():
 
     @staticmethod
