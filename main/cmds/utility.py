@@ -3,6 +3,10 @@ import warnings
 import random
 import datetime
 import arrow
+import time
+import asyncio
+import logging
+
 from typing import Optional
 
 from PIL import Image, ImageColor
@@ -515,3 +519,53 @@ class CmdsUtility:
         embed.add_field(name='Is bot', value=f'```python\n{user.bot}\n```')
 
         await msg.channel.send(None, embed=embed)
+
+
+    @DiscordCmdBase.DiscordEvent()
+    async def reminder_task(self: DiscordBot):
+        logger = logging.getLogger('reminder_task')
+
+        while True:
+            # Process reminders every second
+            await asyncio.sleep(1)
+            # logger.debug(f'tick @ {time.time()}')
+
+            table = self.get_db_table('reminders')
+            for guild in self.guilds:
+                # Sleep to yield db search
+                await asyncio.sleep(0.1)
+
+                entries = table.search(tinydb.Query().fragment({ 'server_id' : guild.id }))
+                if len(entries) == 0:
+                    continue
+
+                for entry in entries:
+                    due_at = arrow.get(entry['due_at']).timestamp()
+                    if arrow.now().timestamp() < due_at:
+                        continue
+
+                    # Sleep to yield db remove
+                    await asyncio.sleep(0.1)
+                    logger.debug(f'Executing reminder id {entry.doc_id} | due_at = {due_at}  now = {arrow.now().timestamp()}')
+
+                    data = entry.copy()
+                    table.remove(doc_ids=[ entry.doc_id ])
+
+                    channel = guild.get_channel(data['channel_id'])
+                    if isinstance(channel, type(None)):
+                        channel = await guild.fetch_channel(data['channel_id'])
+                        if isinstance(channel, type(None)):
+                            logger.debug(f'Channel id {data["channel_id"]} in server {guild.name} does not exist\n')
+                            continue
+
+                    user = guild.get_member(data['user_id'])
+                    if isinstance(user, type(None)):
+                        user = await guild.fetch_member(data['user_id'])
+                        if isinstance(user, type(None)):
+                            logger.debug(f'User id {data["user_id"]} in server {guild.name} does not exist\n')
+                            continue
+
+                    embed = discord.Embed(color=0x1ABC9C, timestamp=arrow.get(data['created_at']).datetime)
+                    embed.set_author(name=user.name, icon_url=user.avatar.url)
+                    embed.add_field(name='⏰ Reminder Message', value=f"```\n{data['text']}\n```")
+                    await channel.send(user.mention, embed=embed)
