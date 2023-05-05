@@ -25,6 +25,7 @@ class CmdsUtility:
 
     @staticmethod
     @DiscordCmdBase.DiscordCmd(
+        perm    =  DiscordCmdBase.ANYONE,
         example = f'{config.cmd_prefix}help [command]',
         help    =
             'Returns the list of command modules or gives you the '
@@ -86,6 +87,7 @@ class CmdsUtility:
 
     @staticmethod
     @DiscordCmdBase.DiscordCmd(
+        perm    = DiscordCmdBase.ANYONE,
         example = f'{config.cmd_prefix}commands Games',
         help    =
             'Shows the commands in a specific module group.'
@@ -109,6 +111,7 @@ class CmdsUtility:
 
     @staticmethod
     @DiscordCmdBase.DiscordCmd(
+        perm    = DiscordCmdBase.ANYONE,
         example = f'{config.cmd_prefix}ping',
         help    =
             'just prints "pong!". Useful to know if the bot is up'
@@ -121,6 +124,7 @@ class CmdsUtility:
 
     @staticmethod
     @DiscordCmdBase.DiscordCmd(
+        perm    = DiscordCmdBase.ANYONE,
         example = f'{config.cmd_prefix}color #1ABC9C',
         help    =
             'Generates a color from the given HEX code or provided RGB numbers.'
@@ -159,6 +163,7 @@ class CmdsUtility:
 
     @staticmethod
     @DiscordCmdBase.DiscordCmd(
+        perm    = DiscordCmdBase.ANYONE,
         example = f'{config.cmd_prefix}avatar @person',
         help    =
             'Shows the avatar of the user. (in the form of a direct link)'
@@ -173,6 +178,7 @@ class CmdsUtility:
 
     @staticmethod
     @DiscordCmdBase.DiscordCmd(
+        perm    = DiscordCmdBase.ANYONE,
         example = f'{config.cmd_prefix}uid @person',
         help    =
             'Shows the User ID of the mentioned user. If no user is mentioned, it will show your ID instead.'
@@ -187,6 +193,7 @@ class CmdsUtility:
 
     @staticmethod
     @DiscordCmdBase.DiscordCmd(
+        perm    = DiscordCmdBase.ANYONE,
         example = f'{config.cmd_prefix}timestamp 2023-02-12 12:23 UTC+4',
         help    =
             'Generates a discord timestamp from the date given'
@@ -221,6 +228,7 @@ class CmdsUtility:
 
     @staticmethod
     @DiscordCmdBase.DiscordCmd(
+        perm    = DiscordCmdBase.ANYONE,
         example = f'{config.cmd_prefix}echo Hello world!',
         help    =
             'Repeats the given text.'
@@ -231,6 +239,7 @@ class CmdsUtility:
 
     @staticmethod
     @DiscordCmdBase.DiscordCmd(
+        perm    = DiscordCmdBase.ANYONE,
         example = f'{config.cmd_prefix}poll Want to eat?; Yes; No; Hand me the cheese',
         help    =
             'Creates a poll with the items from the inputted list. '
@@ -281,6 +290,7 @@ class CmdsUtility:
 
     @staticmethod
     @DiscordCmdBase.DiscordCmd(
+        perm    = DiscordCmdBase.ANYONE,
         example = f'{config.cmd_prefix}remind 1:03:15 LEEEEROOOOY JEEEEEENKIIIIINS!',
         help    =
             'Sets a timer in seconds and displays the message input after it\'s done.'
@@ -356,6 +366,7 @@ class CmdsUtility:
 
     @staticmethod
     @DiscordCmdBase.DiscordCmd(
+        perm    = DiscordCmdBase.ANYONE,
         example = f'{config.cmd_prefix}reminders 3',
         help    =
             'Shows you a list of up to five pending reminders that you made. '
@@ -419,6 +430,7 @@ class CmdsUtility:
 
     @staticmethod
     @DiscordCmdBase.DiscordCmd(
+        perm    = DiscordCmdBase.ANYONE,
         example = f'{config.cmd_prefix}roll 701',
         help    =
             'Gives a random number from 0 to 100. You can specify the highest number '
@@ -447,6 +459,7 @@ class CmdsUtility:
 
     @staticmethod
     @DiscordCmdBase.DiscordCmd(
+        perm    = DiscordCmdBase.ANYONE,
         example = f'{config.cmd_prefix}choose Pizza Burgers Both',
         help    =
             'The bot will select a thing from the inputed list. Separate list '
@@ -464,6 +477,7 @@ class CmdsUtility:
 
     @staticmethod
     @DiscordCmdBase.DiscordCmd(
+        perm    = DiscordCmdBase.ANYONE,
         example = f'{config.cmd_prefix}serverinfo',
         help    =
             'Shows information about the server the command was used on.'
@@ -498,6 +512,7 @@ class CmdsUtility:
 
     @staticmethod
     @DiscordCmdBase.DiscordCmd(
+        perm    = DiscordCmdBase.ANYONE,
         example = f'{config.cmd_prefix}userinfo @person',
         help    =
             'Shows information about the mentioned user. If no user is mentioned, '

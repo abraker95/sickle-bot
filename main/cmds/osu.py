@@ -20,8 +20,9 @@ class CmdsOsu:
     __ot_feed_ch_cache = None
 
     @DiscordCmdBase.DiscordCmd(
+        perm    = DiscordCmdBase.ANYONE,
         example = f'{config.cmd_prefix}forum.bot <cmd>',
-        help    = 
+        help    =
             'Access forum bot endpoint'
     )
     async def forum_bot(self: DiscordBot, msg: discord.Message, *args: str):
@@ -52,7 +53,7 @@ class CmdsOsu:
                     if response.status != 200:
                         await msg.channel.send('Failed')
                         return
-                    
+
                     reply = await response.json()
             except asyncio.TimeoutError:
                 await msg.channel.send('Timed out')
@@ -68,7 +69,7 @@ class CmdsOsu:
             warnings.warn(f'Received invalid reply from OT Feed Server: {reply}')
             await msg.channel.send('Received invalid reply from OT Feed Server')
             return
-        
+
         if 'msg' in reply: txt = str(reply['msg'])
         else:              txt = 'Done' if reply['status'] == 0 else 'Failed'
 
@@ -118,5 +119,5 @@ class CmdsOsu:
                 f'{e}\n'
             )
             return
-        
+
         warnings.warn(f'No #"{ot_feed_channel}" channel found!')

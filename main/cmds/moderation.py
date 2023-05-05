@@ -11,8 +11,9 @@ from main import DiscordCmdBase, DiscordBot
 class CmdsModeration:
 
     @DiscordCmdBase.DiscordCmd(
+        perm    = DiscordCmdBase.MODERATOR,
         example = f'{config.cmd_prefix}bot.en true',
-        help    = 
+        help    =
             'Enable/Disable the bot in the channel.'
     )
     async def bot_en(self: DiscordBot, msg: discord.Message, *args: str):
@@ -50,5 +51,4 @@ class CmdsModeration:
 
         embed = discord.Embed(title=f'{en_text} bot in #{msg.channel.name}', color=0x1ABC9C)
         await msg.channel.send(None, embed=embed)
-        
 

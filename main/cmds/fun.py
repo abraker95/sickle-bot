@@ -12,8 +12,9 @@ class CmdsFun:
 
     @staticmethod
     @DiscordCmdBase.DiscordCmd(
+        perm    = DiscordCmdBase.ANYONE,
         example = f'{config.cmd_prefix}boom',
-        help    = 
+        help    =
             'Sets off a bomb'
     )
     async def boom(self: DiscordBot, msg: discord.Message, *args: str):
@@ -24,8 +25,9 @@ class CmdsFun:
 
     @staticmethod
     @DiscordCmdBase.DiscordCmd(
+        perm    = DiscordCmdBase.ANYONE,
         example = f'{config.cmd_prefix}xkcd 2',
-        help    = 
+        help    =
             'Outputs the specified xkcd or a random xkcd if number not specified.'
     )
     async def xkcd(self: DiscordBot, msg: discord.Message, *args: str):
@@ -59,7 +61,7 @@ class CmdsFun:
         if isinstance(comic_id, type(None)):
             await msg.channel.send(None, embed=discord.Embed(title=':exclamation: Unexpected error', color=0x993333))
             return
-  
+
         reply = requests.get(f'http://xkcd.com/{comic_id}/info.0.json')
         if reply.status_code == 404:  # Not found
             await msg.channel.send(None, embed=discord.Embed(title=':exclamation: Requested comic does not exist', color=0x993333))
@@ -71,7 +73,7 @@ class CmdsFun:
 
         reply = reply.json()
 
-        try: 
+        try:
             embed = discord.Embed(color=0x1abc9c, title=f'🚽 xkcd Comic #{reply["num"]}: {reply["title"]}').set_image(url=reply['img'])
             embed.set_footer(text=reply['alt'])
         except KeyError:

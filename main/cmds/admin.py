@@ -10,6 +10,7 @@ from main import DiscordCmdBase, DiscordBot
 class CmdsAdmin:
 
     @DiscordCmdBase.DiscordCmd(
+        perm    = DiscordCmdBase.ADMINISTRATOR,
         example = f'{config.cmd_prefix}kill',
         help    =
             'Forcefully kill the bot.'
@@ -50,6 +51,7 @@ class CmdsAdmin:
 
 
     @DiscordCmdBase.DiscordCmd(
+        perm    = DiscordCmdBase.ADMINISTRATOR,
         example = f'{config.cmd_prefix}feed.ping',
         help    =
             'Pings the feed server.'
@@ -78,6 +80,7 @@ class CmdsAdmin:
 
     @staticmethod
     @DiscordCmdBase.DiscordCmd(
+        perm    = DiscordCmdBase.ADMINISTRATOR,
         example = f'{config.cmd_prefix}evaluate print("hello world")',
         help    =
             'Executes raw python code. This should be used with caution.'
@@ -94,6 +97,7 @@ class CmdsAdmin:
 
     @staticmethod
     @DiscordCmdBase.DiscordCmd(
+        perm    = DiscordCmdBase.ADMINISTRATOR,
         example = f'{config.cmd_prefix}bot.stats',
         help    =
             'Prints this bots\'s stats'

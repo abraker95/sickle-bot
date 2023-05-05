@@ -19,13 +19,24 @@ class Utils():
 
 class DiscordCmdBase():
 
+    ADMINISTRATOR = 0  # Only admin can use
+    MODERATOR     = 1  # Designated moderator command
+    CONDITIONAL   = 2  # x - Command can be used only if x is true
+    ANYONE        = 3  # Anyone can use the command
+
     @staticmethod
-    def DiscordCmd(example: str, help: str) -> typing.Callable:
+    def DiscordCmd(perm: int, example: str, help: str) -> typing.Callable:
+        # TODO: Add built-in permissions
+        #   - DiscordCmdBase.ADMIN - Only admin can use
+        #   - DiscordCmdBase.PERM([ x0, x1, ... ]) - Command requires permissions x0, x1, etc
+        #   - DiscordCmdBase.COND(x) - Command can be used only if x is true
+        #   - DiscordCmdBase.NONE - Anyone can use the command
 
         def wrapper(fn : typing.Callable) -> dict:
             return {
                 'func'    : fn,
                 'type'    : 'cmd',
+                'perm'    : perm,
                 'example' : example,
                 'help'    : help
             }

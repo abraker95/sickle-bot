@@ -23,11 +23,12 @@ class CmdsImage:
 
     @staticmethod
     @DiscordCmdBase.DiscordCmd(
+        perm    = DiscordCmdBase.ANYONE,
         example =
             '\n'
             f'{config.cmd_prefix}img.zoom 2.3\n'
             f'{config.cmd_prefix}img.zoom https://imgur.com/43ssfs 2.3',
-        help    = 
+        help    =
             'Changes image zoom. Max zoom allowed: 4.0x'
     )
     async def img_zoom(self: DiscordBot, msg: discord.Message, *args: str):
@@ -64,11 +65,12 @@ class CmdsImage:
 
     @staticmethod
     @DiscordCmdBase.DiscordCmd(
+        perm    = DiscordCmdBase.ANYONE,
         example =
             '\n'
             f'{config.cmd_prefix}img.inv\n'
             f'{config.cmd_prefix}img.inv https://imgur.com/43ssfs',
-        help    = 
+        help    =
             'Inverts image colors'
     )
     async def img_inv(self: DiscordBot, msg: discord.Message, *args: str):
@@ -98,6 +100,7 @@ class CmdsImage:
 
     @staticmethod
     @DiscordCmdBase.DiscordCmd(
+        perm    = DiscordCmdBase.ANYONE,
         example =
             '\n'
             f'{config.cmd_prefix}img.chan r\n'
@@ -152,6 +155,7 @@ class CmdsImage:
 
     @staticmethod
     @DiscordCmdBase.DiscordCmd(
+        perm    = DiscordCmdBase.ANYONE,
         example =
             '\n'
             f'{config.cmd_prefix}img.r\n'
@@ -165,6 +169,7 @@ class CmdsImage:
 
     @staticmethod
     @DiscordCmdBase.DiscordCmd(
+        perm    = DiscordCmdBase.ANYONE,
         example =
             '\n'
             f'{config.cmd_prefix}img.g\n'
@@ -178,6 +183,7 @@ class CmdsImage:
 
     @staticmethod
     @DiscordCmdBase.DiscordCmd(
+        perm    = DiscordCmdBase.ANYONE,
         example =
             '\n'
             f'{config.cmd_prefix}img.b\n'
@@ -191,6 +197,7 @@ class CmdsImage:
 
     @staticmethod
     @DiscordCmdBase.DiscordCmd(
+        perm    = DiscordCmdBase.ANYONE,
         example =
             '\n'
             f'{config.cmd_prefix}img.a\n'

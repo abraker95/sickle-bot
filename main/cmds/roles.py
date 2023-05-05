@@ -15,7 +15,7 @@ class CmdsRoles:
     @staticmethod
     @DiscordCmdBase.DiscordCmd(
         example = f'{config.cmd_prefix}autorole Wizard',
-        help    = 
+        help    =
             'Sets the role that should be given to the users that join '
             'the server. To disable the autorole input disable as the '
             'role name. Requires the user who calls the command to have '
@@ -31,8 +31,9 @@ class CmdsRoles:
 
     @staticmethod
     @DiscordCmdBase.DiscordCmd(
+        perm    = DiscordCmdBase.MODERATOR,
         example = f'{config.cmd_prefix}createrole Cheese',
-        help    = 
+        help    =
             'Creates a new role on the server. Requires the user who calls '
             'the command to have the Manage Roles permision.'
     )
@@ -62,8 +63,9 @@ class CmdsRoles:
 
     @staticmethod
     @DiscordCmdBase.DiscordCmd(
+        perm    = DiscordCmdBase.MODERATOR,
         example = f'{config.cmd_prefix}destroyrole Blergh',
-        help    = 
+        help    =
             'Destroy an existing role on the server. Requires the user who '
             'calls the command to have the Manage Roles permision'
     )
@@ -95,8 +97,9 @@ class CmdsRoles:
 
     @staticmethod
     @DiscordCmdBase.DiscordCmd(
+        perm    = DiscordCmdBase.ANYONE,
         example = f'{config.cmd_prefix}togglerole Wizard',
-        help    = 
+        help    =
             'Assigns you or removes you from one of the self assignable roles. '
             'Self assignable roles are added via the addselfrole command. A '
             'list of self assignable roles can be seen with the listselfroles '
@@ -154,16 +157,17 @@ class CmdsRoles:
             warnings.warn('Found more than one user role')
 
         await msg.author.remove_roles(server_role)
-        
-        embed = discord.Embed(title=f'⚠ {role_name} has been removed from you.', color=0xFF9900)        
+
+        embed = discord.Embed(title=f'⚠ {role_name} has been removed from you.', color=0xFF9900)
         await msg.channel.send(None, embed=embed)
         return
 
 
     @staticmethod
     @DiscordCmdBase.DiscordCmd(
+        perm    = DiscordCmdBase.MODERATOR,
         example = f'{config.cmd_prefix}addselfrole Cheese',
-        help    = 
+        help    =
             'Makes a role self assignable. Requires the user who calls the command '
             'to have the Manage Roles permision.'
     )
@@ -172,8 +176,8 @@ class CmdsRoles:
         Data fmt:
             "self_roles": {
                 (id: str): {
-                    "server":    (msg.guild.id: int), 
-                    "role_id":   (msg.guild.roles[i].id: int), 
+                    "server":    (msg.guild.id: int),
+                    "role_id":   (msg.guild.roles[i].id: int),
                     "role_name": (msg.guild.roles[i].name: int)
                 },
                 ...
@@ -215,8 +219,9 @@ class CmdsRoles:
 
     @staticmethod
     @DiscordCmdBase.DiscordCmd(
+        perm    = DiscordCmdBase.MODERATOR,
         example = f'{config.cmd_prefix}delselfrole Cheese',
-        help    = 
+        help    =
             'Makes a role no longer self assignable. Requires the user who calls the '
             'command to have the Manage Roles permision.'
     )
@@ -225,8 +230,8 @@ class CmdsRoles:
         Data fmt:
             "self_roles": {
                 (id: str): {
-                    "server":    (msg.guild.id: int), 
-                    "role_id":   (msg.guild.roles[i].id: int), 
+                    "server":    (msg.guild.id: int),
+                    "role_id":   (msg.guild.roles[i].id: int),
                     "role_name": (msg.guild.roles[i].name: int)
                 },
                 ...
@@ -272,17 +277,18 @@ class CmdsRoles:
 
     @staticmethod
     @DiscordCmdBase.DiscordCmd(
+        perm    = DiscordCmdBase.ANYONE,
         example = f'{config.cmd_prefix}selfroles',
-        help    = 
+        help    =
             'Lists all the roles the user can assign to themselves, or another user can assign to themselves.'
-    )   
+    )
     async def selfroles(self: DiscordBot, msg: discord.Message, *args: str):
         """
         Data fmt:
             "self_roles": {
                 (id: str): {
-                    "server":    (msg.guild.id: int), 
-                    "role_id":   (msg.guild.roles[i].id: int), 
+                    "server":    (msg.guild.id: int),
+                    "role_id":   (msg.guild.roles[i].id: int),
                     "role_name": (msg.guild.roles[i].name: int)
                 },
                 ...
@@ -290,9 +296,9 @@ class CmdsRoles:
         """
         table = self.get_db_table('self_roles')
         results = table.search(tinydb.Query().fragment({ 'server' : msg.guild.id }))
-                
+
         role_list = '\n'.join([ role['role_name'] for role in results ])
-        
+
         if len(role_list) > 1800:
             role_list = role_list[:1800] + '...'
 
@@ -300,13 +306,14 @@ class CmdsRoles:
         embed.add_field(name=f'Self assignable roles:', value=f'```\n{role_list}\n```')
         await msg.channel.send(None, embed=embed)
 
-    
+
     @staticmethod
     @DiscordCmdBase.DiscordCmd(
+        perm    = DiscordCmdBase.ANYONE,
         example = f'{config.cmd_prefix}roles',
-        help    = 
+        help    =
             'Lists all the roles on the server and the total number of roles.'
-    )   
+    )
     async def roles(self: DiscordBot, msg: discord.Message, *args: str):
         roles_names = list([ role.name for role in msg.guild.roles ])
 
