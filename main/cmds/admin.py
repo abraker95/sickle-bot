@@ -3,6 +3,9 @@ import config
 import aiohttp
 import asyncio
 import warnings
+import logging
+import time
+import random
 
 from main import DiscordCmdBase, DiscordBot
 
@@ -136,4 +139,53 @@ class CmdsAdmin:
         reply = discord.Embed(color=0x1abc9c)
         reply.add_field(name=f'Stats', value=f'```yaml\n{stats_str}```')
         await msg.channel.send(None, embed=reply)
+
+
+    @DiscordCmdBase.DiscordEvent()
+    async def user_engagement_task(self: DiscordBot):
+        """
+        Data fmt:
+            "bot_ch": {
+                (server.id: str): { "channel" : (channel.id: int) }
+                ...
+            }
+        """
+        logger = logging.getLogger('user_engagement_task')
+
+        while True:
+            # Process once a day
+            await asyncio.sleep(60*60*24)
+
+            logger.debug(f'tick @ {time.time()}')
+
+            table = self.get_db_table('bot_ch')
+            for entry in table:
+                guild = self.get_guild(entry.doc_id)
+                if isinstance(guild, type(None)):
+                    guild = await self.fetch_guild(entry.doc_id)
+                    if isinstance(guild, type(None)):
+                        continue
+
+                channel = guild.get_channel(entry['channel'])
+                if isinstance(channel, type(None)):
+                    channel = guild.fetch_channel(entry['channel'])
+                    if isinstance(channel, type(None)):
+                        continue
+
+                while True:
+                    cmd_name, cmd_data = random.choice(list(self._cmds.items()))
+                    if cmd_data['perm'] == DiscordCmdBase.ANYONE:
+                        break
+
+                embed = discord.Embed(title=f'Did you know :grey_question:', color=0x1B6F5F)
+                embed.add_field(
+                    name = f'The `{config.cmd_prefix}{cmd_name}` command',
+                    value =
+                        f'Example: `{cmd_data["example"]}`\n'
+                        '```\n'
+                        f'{cmd_data["help"]}\n'
+                        '```'
+                )
+
+                await channel.send(None, embed=embed)
 
