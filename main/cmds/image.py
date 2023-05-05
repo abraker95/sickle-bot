@@ -102,8 +102,8 @@ class CmdsImage:
             '\n'
             f'{config.cmd_prefix}img.chan r\n'
             f'{config.cmd_prefix}img.chan https://imgur.com/43ssfs r',
-        help    = 
-            'Extracts the red (r), green (g), blue (b), or alpha (a) channel'
+        help    =
+            'Extracts the red (r), green (g), blue (b), or alpha (a) channel from the image'
     )
     async def img_chan(self: DiscordBot, msg: discord.Message, *args: str):
         if len(args) not in [ 1, 2 ]:
@@ -156,8 +156,8 @@ class CmdsImage:
             '\n'
             f'{config.cmd_prefix}img.r\n'
             f'{config.cmd_prefix}img.r https://imgur.com/43ssfs',
-        help    = 
-            'Takes the red channel'
+        help    =
+            'Extracts the red channel out of the image'
     )
     async def img_r(self: DiscordBot, msg: discord.Message, *args: str):
         await CmdsImage.img_chan['func'](self, msg, *(args[0], 'r'))
@@ -169,8 +169,8 @@ class CmdsImage:
             '\n'
             f'{config.cmd_prefix}img.g\n'
             f'{config.cmd_prefix}img.g https://imgur.com/43ssfs',
-        help    = 
-            'Takes the green channel'
+        help    =
+            'Extracts the green channel out of the image'
     )
     async def img_g(self: DiscordBot, msg: discord.Message, *args: str):
         await CmdsImage.img_chan['func'](self, msg, *(args[0], 'g'))
@@ -182,8 +182,8 @@ class CmdsImage:
             '\n'
             f'{config.cmd_prefix}img.b\n'
             f'{config.cmd_prefix}img.b https://imgur.com/43ssfs',
-        help    = 
-            'Takes the blue channel'
+        help    =
+            'Extracts the blue channel out of the image'
     )
     async def img_b(self: DiscordBot, msg: discord.Message, *args: str):
         await CmdsImage.img_chan['func'](self, msg, *(args[0], 'b'))
@@ -195,8 +195,8 @@ class CmdsImage:
             '\n'
             f'{config.cmd_prefix}img.a\n'
             f'{config.cmd_prefix}img.a https://imgur.com/43ssfs',
-        help    = 
-            'Takes the alpha channel'
+        help    =
+            'Extracts the alpha channel out of the image'
     )
     async def img_a(self: DiscordBot, msg: discord.Message, *args: str):
         await CmdsImage.img_chan['func'](self, msg, *(args[0], 'a'))
