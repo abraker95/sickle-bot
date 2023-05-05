@@ -80,7 +80,7 @@ class DiscordBot(discord.Client):
     def get_logger(self):
         if isinstance(self, DiscordBot):
             return self.__logger
-    
+
         return logging.getLogger(type(self))
 
 
@@ -157,7 +157,7 @@ class DiscordBot(discord.Client):
     async def on_connect(self):
         if self.__is_connected:
             return
-    
+
         self.__is_connected = True
         self.__logger.info(f'Connected to discord!')
         self.__logger.info(f'Serving {len(self.guilds)} servers')
@@ -208,7 +208,7 @@ class DiscordBot(discord.Client):
                     if member['type'] == 'cmd':
                         self._cmds[name] = member
                         self._modules[module_file].append(name)
-                    
+
                     if member['type'] == 'event':
                         self._events[name] = member
 
@@ -280,7 +280,7 @@ class DiscordBot(discord.Client):
 
         while True:
             await asyncio.sleep(1)
-            
+
             if config.runtime_quit:
                 await self.__report('Exiting discord loop...')
                 await self.close()
@@ -294,6 +294,13 @@ class DiscordBot(discord.Client):
         with warnings.catch_warnings(record=True) as w:
             try: await self._cmds[cmd]['func'](self, msg, *args)
             except Exception as e:
+                try:
+                    embed = discord.Embed(type='rich', color=0xFF9900, title='⚠ Error')
+                    embed.add_field(name='Something went wrong', value=f'Do not panic! The developers have been notified.')
+                    await msg.channel.send(None, embed=embed)
+                except Exception:
+                    pass
+
                 err = Utils.format_exception(e)
 
                 await self.__report(
