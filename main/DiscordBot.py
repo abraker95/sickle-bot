@@ -141,6 +141,9 @@ class DiscordBot(discord.Client):
 
             self.__bot_loop.create_task(self.__exec_cmd(cmd, msg, args))
             self.__logger.debug(f'{cmd}:@{msg.author.name} -> {msg.guild.name}:#{msg.channel.name}')
+
+            self.__db_inc_cmd_count(msg.guild.id, cmd)
+
         except Exception as e:
             await self.__report(
                 f'Error: `on_message` crash\n'
@@ -398,3 +401,49 @@ class DiscordBot(discord.Client):
         if msg_type == DiscordBot.__MSG_TYPE_CMDS:  entry['total_cmds'] += 1
 
         table.update(entry)
+
+
+    def __db_inc_cmd_count(self, server_id: int, cmd: str):
+        """
+        Data fmt:
+            "cmd_stats": {
+                (doc_id: int) : { 'cmd' : (cmd: str), 'server' : (server_id: int), 'count' : (count: int) },
+                (doc_id: int) : { 'cmd' : (cmd: str), 'server' : (server_id: int), 'count' : (count: int) },
+                ...
+            }
+        """
+        table = self.get_db_table('cmd_stats')
+        entry = table.get(tinydb.Query().fragment({'cmd' : cmd, 'server' : server_id}))
+
+        if not entry:
+            table.insert({ 'cmd' : cmd, 'server' : server_id, 'count' : 1 })
+        else:
+            table.update({ 'count' : entry['count'] + 1 }, doc_ids=[ entry.doc_id ])
+
+
+    def db_get_cmd_server_count(self, server_id: int, cmd: str) -> int:
+        """
+        Data fmt:
+            "cmd_stats": {
+                (doc_id: int) : { 'cmd' : (cmd: str), 'server' : (server_id: int), 'count' : (count: int) },
+                (doc_id: int) : { 'cmd' : (cmd: str), 'server' : (server_id: int), 'count' : (count: int) },
+                ...
+            }
+        """
+        table = self.get_db_table('cmd_stats')
+        entry = table.get(tinydb.Query().fragment({'cmd' : cmd, 'server' : server_id}))
+        return 0 if not entry else entry['count']
+
+
+    def db_get_cmd_total_count(self, cmd: str) -> int:
+        """
+        Data fmt:
+            "cmd_stats": {
+                (doc_id: int) : { 'cmd' : (cmd: str), 'server' : (server_id: int), 'count' : (count: int) },
+                (doc_id: int) : { 'cmd' : (cmd: str), 'server' : (server_id: int), 'count' : (count: int) },
+                ...
+            }
+        """
+        table = self.get_db_table('cmd_stats')
+        entries = table.search(tinydb.Query().fragment({'cmd' : cmd}))
+        return sum([ entry['count'] for entry in entries ])
