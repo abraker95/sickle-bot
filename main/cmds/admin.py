@@ -158,7 +158,7 @@ class CmdsAdmin:
         perm    = DiscordCmdBase.ADMINISTRATOR,
         example = f'{config.cmd_prefix}cmd.stats.all',
         help    =
-            'Prints this bots\'s stats'
+            'Prints command usage stats for all servers'
     )
     async def cmd_stats_all(self: DiscordBot, msg: discord.Message, *args: str):
         if msg.author.id != config.admin_user_id:

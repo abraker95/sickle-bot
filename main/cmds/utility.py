@@ -143,6 +143,39 @@ class CmdsUtility:
     @staticmethod
     @DiscordCmdBase.DiscordCmd(
         perm    = DiscordCmdBase.ANYONE,
+        example = f'{config.cmd_prefix}cmd.stats',
+        help    =
+            'Prints command usage stats for this server'
+    )
+    async def cmd_stats(self: DiscordBot, msg: discord.Message, *args: str):
+        if msg.author.id != config.admin_user_id:
+            status = discord.Embed(title='You must be the bot admin to use this command', color=0x800000)
+            await msg.channel.send(None, embed=status)
+            return
+
+        cmd_counts = {}
+        for cmd in self._cmds:
+            if self._cmds[cmd]['perm'] == DiscordCmdBase.ADMINISTRATOR:
+                # Don't give stats for admin commands
+                continue
+
+            cmd_counts[cmd] = self.db_get_cmd_server_count(msg.guild.id, cmd)
+
+        cmd_names_txt = '\n'.join(map(str, cmd_counts.keys()))
+        cmd_stats_txt = '\n'.join(map(str, cmd_counts.values()))
+
+        reply = discord.Embed(color=0x1abc9c)
+        reply.set_author(name='Command Stats')
+        reply.add_field(name='', value=f'```{cmd_names_txt}```', inline=True)
+        reply.add_field(name='', value=f'```{cmd_stats_txt}```', inline=True)
+        reply.set_footer(text=f'In {msg.guild.name}')
+
+        await msg.channel.send(None, embed=reply)
+
+
+    @staticmethod
+    @DiscordCmdBase.DiscordCmd(
+        perm    = DiscordCmdBase.ANYONE,
         example = f'{config.cmd_prefix}color #1ABC9C',
         help    =
             'Generates a color from the given HEX code or provided RGB numbers.'
