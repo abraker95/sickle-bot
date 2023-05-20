@@ -6,6 +6,7 @@ import warnings
 import logging
 import time
 import random
+import inspect
 
 from main import DiscordCmdBase, DiscordBot
 
@@ -84,18 +85,28 @@ class CmdsAdmin:
     @staticmethod
     @DiscordCmdBase.DiscordCmd(
         perm    = DiscordCmdBase.ADMINISTRATOR,
-        example = f'{config.cmd_prefix}evaluate print("hello world")',
+        example = f'{config.cmd_prefix}eval print("hello world")',
         help    =
             'Executes raw python code. This should be used with caution.'
     )
-    async def evaluate(self: DiscordBot, msg: discord.Message, *args: str):
+    async def eval(self: DiscordBot, msg: discord.Message, *args: str):
         if msg.author.id != config.admin_user_id:
             status = discord.Embed(title='You must be the bot admin to use this command', color=0x800000)
             await msg.channel.send(None, embed=status)
             return
 
-        # TODO
-        pass
+        if len(args) == 0:
+            await self.run_help_cmd(msg, 'eval')
+            return
+
+        output = eval(' '.join(args))
+        if inspect.isawaitable(output):
+            output = await output
+
+        status = discord.Embed(title='✅ Executed', color=0x66CC66)
+        if output:
+            status.add_field(name='Results', value=f'\n```\n{output}\n```')
+        await msg.channel.send(None, embed=status)
 
 
     @staticmethod
