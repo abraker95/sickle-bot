@@ -4,6 +4,8 @@ import os
 import importlib
 import inspect
 import warnings
+import time
+import git
 
 import logging
 import asyncio
@@ -357,6 +359,15 @@ class DiscordBot(discord.Client):
                 f'Msg:\n'
                 f'    {msg}\n'
             )
+
+
+    def get_version(self) -> str:
+        try: repo = git.Repo('.')
+        except git.NoSuchPathError:
+            return 'v?'
+
+        date = repo.head.commit.committed_date
+        return time.strftime('v%Y.%m.%d', time.gmtime(date))
 
 
     def __db_inc_msgs(self, msg: discord.Message, msg_type: int):

@@ -6,3 +6,4 @@ requests
 validators
 arrow
 pillow
+GitPython

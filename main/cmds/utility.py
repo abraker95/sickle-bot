@@ -59,7 +59,12 @@ class CmdsUtility:
                 inline = True
             )
 
-            embed.set_footer(text=f'Use {config.cmd_prefix}commands <module> to get a list of commands available in that module.\n Use {config.cmd_prefix}help <command> to get a description about the command usage.')
+            embed.set_footer(text=
+                f'Use {config.cmd_prefix}commands <module> for list of commands available in that module.\n'
+                f'Use {config.cmd_prefix}help <command> for description about the command usage.\n'
+                '\n'
+                f'{self.get_version()}'
+            )
             embed.set_image(url='https://i.imgur.com/UOzJ31H.png')
 
             await msg.channel.send(None, embed=embed)
