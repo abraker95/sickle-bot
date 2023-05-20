@@ -4,6 +4,7 @@ import datetime
 import arrow
 import asyncio
 import logging
+import warnings
 
 from typing import Optional
 
@@ -115,9 +116,23 @@ class CmdsUtility:
     @staticmethod
     @DiscordCmdBase.DiscordCmd(
         perm    = DiscordCmdBase.ANYONE,
+        example = f'{config.cmd_prefix}devs A command that gives sickle a cookie :cookie:',
+        help    =
+            'Message the devs a suggestion or issues'
+    )
+    async def devs(self: DiscordBot, msg: discord.Message, *args: str):
+        await self.msg_dev(msg.guild, msg.author, ' '.join(args))
+
+        embed = discord.Embed(color=0x0099FF, title='Your message has reached the devs!')
+        await msg.channel.send(None, embed=embed)
+
+
+    @staticmethod
+    @DiscordCmdBase.DiscordCmd(
+        perm    = DiscordCmdBase.ANYONE,
         example = f'{config.cmd_prefix}ping',
         help    =
-            'just prints "pong!". Useful to know if the bot is up'
+            'Just prints "pong!". Useful to know if the bot is up'
     )
     async def ping(self: DiscordBot, msg: discord.Message, *args: str):
         ms = arrow.utcnow().timestamp() - msg.created_at.timestamp()

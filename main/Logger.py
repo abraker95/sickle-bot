@@ -7,7 +7,7 @@ import os
 
 
 if not os.path.exists(config.log_path):
-    os.makedirs(config.log_path)    
+    os.makedirs(config.log_path)
 
 
 
@@ -17,13 +17,13 @@ class Logger(logging.getLoggerClass()):
         super().__init__(name, level=logging.DEBUG)
 
         formatter = logging.Formatter('%(levelname)s  %(asctime)s   [ %(name)s ] %(message)s')
-        
+
         self.sh = logging.StreamHandler()
         self.sh.setFormatter(formatter)
 
         if 'db' in config.runtime_mode: self.sh.setLevel(logging.DEBUG)
         else:                           self.sh.setLevel(logging.INFO)
-        
+
         self.addHandler(self.sh)
 
         # \TODO: Maybe break up the logging file if it goes over 1MB
@@ -31,7 +31,7 @@ class Logger(logging.getLoggerClass()):
         #   if over 1MB, then rename current logging file to '{start_date}_{end_date}_{logger_name}.log'
         #   cut-paste into logging folder named '{logger_name}'
 
-        self.fh = logging.FileHandler(str(config.log_path / (name + '.log')))
+        self.fh = logging.FileHandler(str(config.log_path / (name + '.log')), encoding='utf-32')
         self.fh.setFormatter(formatter)
         self.fh.setLevel(logging.INFO)
         self.addHandler(self.fh)
@@ -46,15 +46,15 @@ class Logger(logging.getLoggerClass()):
     '''
     def error(self, msg):
         msg = msg.strip()
-        if msg == 'None' or msg == 'N/A' or len(msg) == 0: 
+        if msg == 'None' or msg == 'N/A' or len(msg) == 0:
             self.exception(msg)
         else:
             self.error(msg)
 
-    
+
     def critical(self, msg):
         msg = msg.strip()
-        if msg == 'None' or msg == 'N/A' or len(msg) == 0: 
+        if msg == 'None' or msg == 'N/A' or len(msg) == 0:
             self.exception(msg)
         else:
             self.critical(msg)

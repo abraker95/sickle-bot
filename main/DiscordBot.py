@@ -364,6 +364,22 @@ class DiscordBot(discord.Client):
             )
 
 
+    async def msg_dev(self, server: discord.Guild, user: discord.User, msg: str):
+        msg = f'{msg.replace("```", "`​`​`")}'
+
+        try:
+            invites = await server.invites()
+            server_text = f'From [{server.name}]({invites[0]})'
+        except:
+            server_text = f'From {server.name} (id: {server.id})'
+
+        embed = discord.Embed(color=0x0099FF)
+        embed.add_field(name=f'{user.name} (id: {user.id})', value=msg)
+        embed.set_thumbnail(url=user.avatar.url)
+        embed.set_footer(text=server_text)
+        await self.__dbg_ch.send(None, embed=embed)
+
+
     def get_version(self) -> str:
         try: repo = git.Repo('.')
         except git.NoSuchPathError:
