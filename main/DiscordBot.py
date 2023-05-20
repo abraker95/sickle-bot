@@ -106,6 +106,28 @@ class DiscordBot(discord.Client):
 
             self.__db_inc_msgs(msg, DiscordBot.__MSG_TYPE_USERS)
 
+            if msg.reference:
+                ref_msg = await msg.channel.fetch_message(msg.reference.message_id)
+                if ref_msg.author.id == self.user.id:
+                    # Message the devs if the user replies to the bot
+                    ref_content = \
+                    ''.join(
+                        f'> {line}\n'
+                        for line in ref_msg.content.split('\n')
+                    ) + \
+                    ''.join([
+                        f'> {line}\n'
+                        for embed in ref_msg.embeds
+                        for field in embed.fields
+                        for line in field.value.split('\n')
+                    ])
+
+                    await self.msg_dev(
+                        msg.guild, msg.author,
+                        f'{ref_content}\n'
+                        f'{msg.content}\n'
+                    )
+
             if not msg.content.startswith(config.cmd_prefix):
                 # Responding to commands only
                 return
