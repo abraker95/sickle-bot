@@ -102,7 +102,7 @@ class CmdsRoles:
         help    =
             'Assigns you or removes you from one of the self assignable roles. '
             'Self assignable roles are added via the addselfrole command. A '
-            'list of self assignable roles can be seen with the listselfroles '
+            'list of self assignable roles can be seen with the selfroles '
             'command.'
     )
     async def togglerole(self: DiscordBot, msg: discord.Message, *args: str):

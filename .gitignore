@@ -3,3 +3,4 @@ logs/*
 *.pyc
 /config.py
 /db.json
+/tests/*

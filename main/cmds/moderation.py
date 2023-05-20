@@ -79,7 +79,7 @@ class CmdsModeration:
             await msg.channel.send(None, embed=embed)
             return
 
-        entry = table.get(None, doc_id=msg.guild.id)
+        entry = table.get(doc_id=msg.guild.id)
         if isinstance(entry, type(None)):
             warnings.warn('Got none result despite having an entry')
             raise Exception
@@ -117,7 +117,7 @@ class CmdsModeration:
             await msg.channel.send(None, embed=embed)
             return
 
-        entry = table.get(None, doc_id=msg.guild.id)
+        entry = table.get(doc_id=msg.guild.id)
         if isinstance(entry, type(None)):
             warnings.warn('Got none result despite having an entry')
             raise Exception
