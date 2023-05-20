@@ -152,6 +152,40 @@ class CmdsAdmin:
         await msg.channel.send(None, embed=reply)
 
 
+
+    @staticmethod
+    @DiscordCmdBase.DiscordCmd(
+        perm    = DiscordCmdBase.ADMINISTRATOR,
+        example = f'{config.cmd_prefix}cmd.stats.all',
+        help    =
+            'Prints this bots\'s stats'
+    )
+    async def cmd_stats_all(self: DiscordBot, msg: discord.Message, *args: str):
+        if msg.author.id != config.admin_user_id:
+            status = discord.Embed(title='You must be the bot admin to use this command', color=0x800000)
+            await msg.channel.send(None, embed=status)
+            return
+
+        cmd_counts = {}
+        for cmd in self._cmds:
+            if self._cmds[cmd]['perm'] == DiscordCmdBase.ADMINISTRATOR:
+                # Don't give stats for admin commands
+                continue
+
+            cmd_counts[cmd] = self.db_get_cmd_total_count(cmd)
+
+        cmd_names_txt = '\n'.join(map(str, cmd_counts.keys()))
+        cmd_stats_txt = '\n'.join(map(str, cmd_counts.values()))
+
+        reply = discord.Embed(color=0x1abc9c)
+        reply.set_author(name='Command Stats')
+        reply.add_field(name='', value=f'```{cmd_names_txt}```', inline=True)
+        reply.add_field(name='', value=f'```{cmd_stats_txt}```', inline=True)
+        reply.set_footer(text='All servers')
+
+        await msg.channel.send(None, embed=reply)
+
+
     @DiscordCmdBase.DiscordEvent()
     async def user_engagement_task(self: DiscordBot):
         """
