@@ -14,6 +14,7 @@ class CmdsRoles:
 
     @staticmethod
     @DiscordCmdBase.DiscordCmd(
+        perm    = DiscordCmdBase.ADMINISTRATOR,
         example = f'{config.cmd_prefix}autorole Wizard',
         help    =
             'Sets the role that should be given to the users that join '
@@ -26,7 +27,7 @@ class CmdsRoles:
             await self.run_help_cmd(msg, 'autorole')
             return
 
-        # TODO
+        raise NotImplementedError
 
 
     @staticmethod
