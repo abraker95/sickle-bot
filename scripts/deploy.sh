@@ -1,3 +1,5 @@
+#!/bin/bash
+
 $(dirname ${0%})/build.sh
 
 # Stuff is copied to a seperate prod location so
