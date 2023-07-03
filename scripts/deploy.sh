@@ -6,6 +6,6 @@ $(dirname ${0%})/build.sh
 # To be run as root
 systemctl stop sickle.service
 rm -rf /home/server/prod/sickle-bot
-cp -r . /home/server/prod/sickle-bot
+rsync -av --progress . /home/server/prod/sickle-bot --exclude config.py
 chown -R server:server /home/server/prod/sickle-bot
 systemctl start sickle.service
