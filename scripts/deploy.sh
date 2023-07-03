@@ -5,7 +5,7 @@ $(dirname ${0%})/build.sh
 #
 # To be run as root
 systemctl stop sickle.service
-rm -r /home/server/prod/sickle-bot
+rm -rf /home/server/prod/sickle-bot
 cp -r . /home/server/prod/sickle-bot
 chown -R server:server /home/server/prod/sickle-bot
 systemctl start sickle.service
