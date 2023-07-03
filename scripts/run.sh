@@ -1,3 +1,5 @@
+#!/bin/bash
+
 if [[ "$VIRTUAL_ENV" == "" ]]; then
     if [ ! -d "venv" ]; then
         echo "No venv was found. Creating..."
