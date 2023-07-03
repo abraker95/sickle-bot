@@ -65,14 +65,17 @@ class DiscordBot(discord.Client):
         while True:
             try:
                 await self.login(config.discord_token)
-            except aiohttp.ClientConnectionError:
-                self.__logger.warn(f'Unable to connect to discord. Retrying in {retry} seconds...')
+            except aiohttp.ClientConnectionError as e:
+                self.__logger.warn(f'Unable to connect to discord; {e}. Retrying in {retry} seconds...')
 
                 await asyncio.sleep(retry)
                 retry = min(120, retry + 10)
 
                 self.clear()
                 continue
+            except KeyboardInterrupt:
+                self.close()
+                return
             else:
                 break
 
