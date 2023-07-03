@@ -360,7 +360,7 @@ class DiscordBot(discord.Client):
 
         if self.__dbg_ch is None:
             self.__logger.warn(
-                f'Enable to send message to debug channel - Does channel exist?\n'
+                f'Unable to send message to debug channel - Does channel exist?\n'
                 f'Msg:\n'
                 f'    {msg}\n'
             )
