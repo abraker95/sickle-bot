@@ -137,6 +137,12 @@ class DiscordBot(discord.Client):
 
             self.__db_inc_msgs(msg, DiscordBot.__MSG_TYPE_CMDS)
 
+            cmd = msg.content.lstrip(config.cmd_prefix)
+
+            args = cmd.split(' ')
+            cmd  = args[0]
+            args = args[1:]
+
             if not msg.author.guild_permissions.manage_channels:
                 table = self.get_db_table('bot_en')
                 if not table.contains(doc_id=msg.channel.id):
@@ -153,12 +159,6 @@ class DiscordBot(discord.Client):
                             'Ignoring command because channel does not have `bot_en` and user has no manage channel permission.'
                         )
                         return
-
-            cmd = msg.content.lstrip(config.cmd_prefix)
-
-            args = cmd.split(' ')
-            cmd  = args[0]
-            args = args[1:]
 
             if not cmd in self._cmds:
                 self.__logger.debug(f'"{cmd}" invalid cmd')
