@@ -437,7 +437,6 @@ class DiscordBot(discord.Client):
             return
 
         if not msg.content.startswith(config.cmd_prefix):
-            await msg.channel.send(self.db_get_info_msg())
             return
 
         cmd = msg.content.lstrip(config.cmd_prefix)
