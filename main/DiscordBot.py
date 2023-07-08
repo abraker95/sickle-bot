@@ -481,9 +481,17 @@ class DiscordBot(discord.Client):
 
                 err = Utils.format_exception(e)
 
+                try: server_name = msg.guild.name
+                except AttributeError:
+                    server_name = 'DM'
+
+                try: channel_name = msg.channel.name
+                except AttributeError:
+                    channel_name = ''
+
                 await self.__report(
                     f'[ ERROR ]\n'
-                    f'{msg.guild.name}:#{msg.channel.name} @{msg.author.name} | "{config.cmd_prefix}{cmd} {" ".join(args)}"\n'
+                    f'{server_name}:#{channel_name} @{msg.author.name} | "{config.cmd_prefix}{cmd} {" ".join(args)}"\n'
                     f'{err}\n'
                 )
 
@@ -492,9 +500,17 @@ class DiscordBot(discord.Client):
                 file = warning.filename.split('\\')[-1]
                 err = f'  {file}, line {warning.lineno}'
 
+                try: server_name = msg.guild.name
+                except AttributeError:
+                    server_name = 'DM'
+
+                try: channel_name = msg.channel.name
+                except AttributeError:
+                    channel_name = ''
+
                 await self.__report(
                     f'[ WARNING ]\n'
-                    f'{msg.guild.name}:#{msg.channel.name} @{msg.author.name} | "{config.cmd_prefix}{cmd} {" ".join(args)}"\n'
+                    f'{server_name}:#{channel_name} @{msg.author.name} | "{config.cmd_prefix}{cmd} {" ".join(args)}"\n'
                     f'Warning: {warning.message}\n'
                     f'{err}\n'
                 )
