@@ -274,6 +274,13 @@ class DiscordBot(discord.Client):
             if channel.id == config.debug_channel:
                 self.__dbg_ch = channel
 
+            # Auto assign bot channel if not set
+            if 'bot' in channel.name:
+                table = self.get_db_table('bot_ch')
+                if not table.contains(doc_id=channel.guild.id):
+                    self.__logger.info(f'Setting bot channel for {channel.guild.name}#{channel.name} | {channel.guild.id}.{channel.id}')
+                    table.insert(Document({ 'channel' : channel.id }, channel.guild.id))
+
         if isinstance(self.__dbg_ch, type(None)):
             self.__logger.info(f'Debug channel not found!')
         else:
