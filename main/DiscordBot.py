@@ -495,3 +495,39 @@ class DiscordBot(discord.Client):
         table = self.get_db_table('cmd_stats')
         entries = table.search(tinydb.Query().fragment({'cmd' : cmd}))
         return sum([ entry['count'] for entry in entries ])
+
+
+    def db_set_info_msg(self, msg: str):
+        """
+        Data fmt:
+            "bot_cfg": {
+                (doc_id: 0) : {
+                    'info' : (msg: str)
+                }
+            }
+        """
+        table = self.get_db_table('bot_cfg')
+        entry = table.get(doc_id=DiscordBot.__DB_BOT_CFG_INFO_MSG)
+
+        if not entry:
+            table.insert({ 'info' : msg })
+        else:
+            table.update({ 'info' : msg }, doc_ids=[ DiscordBot.__DB_BOT_CFG_INFO_MSG ])
+
+
+    def db_get_info_msg(self) -> str:
+        """
+        Data fmt:
+            "bot_cfg": {
+                (doc_id: 0) : {
+                    'info' : (msg: str)
+                }
+            }
+        """
+        table = self.get_db_table('bot_cfg')
+        entry = table.get(doc_id=DiscordBot.__DB_BOT_CFG_INFO_MSG)
+
+        if not entry:
+            return 'Use ">>devs {msg}" to notify devs of any issues'
+
+        return entry['info']

@@ -186,6 +186,25 @@ class CmdsAdmin:
         await msg.channel.send(None, embed=reply)
 
 
+    @staticmethod
+    @DiscordCmdBase.DiscordCmd(
+        perm    = DiscordCmdBase.ADMINISTRATOR,
+        example = f'{config.cmd_prefix}cmd.set.info',
+        help    =
+            'Info message that gets printed when a user responds to the bot in DMs'
+    )
+    async def cmd_set_info(self: DiscordBot, msg: discord.Message, *args: str):
+        if msg.author.id != config.admin_user_id:
+            status = discord.Embed(title='You must be the bot admin to use this command', color=0x800000)
+            await msg.channel.send(None, embed=status)
+            return
+
+        self.db_set_info_msg(' '.join(args))
+
+        status = discord.Embed(title='✅ Info message set', color=0x66CC66)
+        await msg.channel.send(None, embed=status)
+
+
     @DiscordCmdBase.DiscordEvent()
     async def user_engagement_task(self: DiscordBot):
         """
