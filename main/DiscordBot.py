@@ -257,25 +257,26 @@ class DiscordBot(discord.Client):
 
         if msg.reference:
             ref_msg = await msg.channel.fetch_message(msg.reference.message_id)
-
-            if ref_msg.author.id == self.user.id:
-                # Message the devs if the user replies to the bot
-                ref_content = \
-                ''.join(
-                    f'{line}\n'
-                    for line in ref_msg.content.split('\n')
-                ) + \
-                ''.join([
-                    f'{line}\n'
-                    for embed in ref_msg.embeds
-                    for field in embed.fields
-                    for line in field.value.split('\n')
-                ]) + \
-                '===================\n' + \
-                msg.content
-
-                await self.msg_dev(msg, f'{ref_content}\n')
+            if ref_msg.author.id != self.user.id:
                 return
+
+            # Message the devs if the user replies to the bot
+            ref_content = \
+            ''.join(
+                f'{line}\n'
+                for line in ref_msg.content.split('\n')
+            ) + \
+            ''.join([
+                f'{line}\n'
+                for embed in ref_msg.embeds
+                for field in embed.fields
+                for line in field.value.split('\n')
+            ]) + \
+            '===================\n' + \
+            msg.content
+
+            await self.msg_dev(msg, f'{ref_content}\n')
+            return
 
         if not msg.content.startswith(config.cmd_prefix):
             await msg.channel.send(self.db_get_info_msg())
@@ -311,24 +312,26 @@ class DiscordBot(discord.Client):
 
         if msg.reference:
             ref_msg = await msg.channel.fetch_message(msg.reference.message_id)
-            if ref_msg.author.id == self.user.id:
-                # Message the devs if the user replies to the bot
-                ref_content = \
-                ''.join(
-                    f'{line}\n'
-                    for line in ref_msg.content.split('\n')
-                ) + \
-                ''.join([
-                    f'{line}\n'
-                    for embed in ref_msg.embeds
-                    for field in embed.fields
-                    for line in field.value.split('\n')
-                ]) + \
-                '===================\n' + \
-                msg.content
-
-                await self.msg_dev(msg, f'{ref_content}\n')
+            if ref_msg.author.id != self.user.id:
                 return
+
+            # Message the devs if the user replies to the bot
+            ref_content = \
+            ''.join(
+                f'{line}\n'
+                for line in ref_msg.content.split('\n')
+            ) + \
+            ''.join([
+                f'{line}\n'
+                for embed in ref_msg.embeds
+                for field in embed.fields
+                for line in field.value.split('\n')
+            ]) + \
+            '===================\n' + \
+            msg.content
+
+            await self.msg_dev(msg, f'{ref_content}\n')
+            return
 
         if not msg.content.startswith(config.cmd_prefix):
             # Responding to commands only
@@ -376,60 +379,62 @@ class DiscordBot(discord.Client):
 
         if msg.reference:
             ref_msg = await msg.channel.fetch_message(msg.reference.message_id)
-            if ref_msg.author.id == self.user.id:
-                # Message back the user if the dev replies to the bot
-                # Resolve channel ID
-                try:
-                    footer_text = ref_msg.embeds[0]._footer['text']
-                    source_ids = ref_msg.embeds[0]._footer['text'].split('|')[1].split('.')
-                except IndexError:
-                    await self.__report(
-                        f'[ WARNING ]\n'
-                        'Replied to wrong message probably\n'
-                    )
-                    return
-
-                if 'DM' in footer_text:
-                    source_user_id = int(source_ids[0].strip())
-                    source_ch_id   = int(source_ids[1].strip())
-                    source_msg_id  = int(source_ids[2].strip())
-                else:
-                    source_user_id = None
-                    source_ch_id   = int(source_ids[1].strip())
-                    source_msg_id  = int(source_ids[2].strip())
-
-                try: source_ch = await self.fetch_channel(source_ch_id)
-                except discord.NotFound:
-                    await self.__report(
-                        f'[ WARNING ]\n'
-                        'Failed to reply to message: Cannot fetch channel\n'
-                    )
-                    return
-
-                try: source_msg = await source_ch.fetch_message(source_msg_id)
-                except discord.NotFound:
-                    await self.__report(
-                        f'[ WARNING ]\n'
-                        'Failed to reply to message: Cannot fetch message\n'
-                    )
-                    return
-
-                content = \
-                ''.join(
-                    f'{line}\n'
-                    for line in ref_msg.content.split('\n')
-                ) + \
-                ''.join([
-                    f'{line}\n'
-                    for embed in ref_msg.embeds
-                    for field in embed.fields
-                    for line in field.value.split('\n')
-                ]) + \
-                '===================\n' + \
-                msg.content
-
-                await self.reply_msg(source_msg, content)
+            if ref_msg.author.id != self.user.id:
                 return
+
+            # Message back the user if the dev replies to the bot
+            # Resolve channel ID
+            try:
+                footer_text = ref_msg.embeds[0]._footer['text']
+                source_ids = ref_msg.embeds[0]._footer['text'].split('|')[1].split('.')
+            except IndexError:
+                await self.__report(
+                    f'[ WARNING ]\n'
+                    'Replied to wrong message probably\n'
+                )
+                return
+
+            if 'DM' in footer_text:
+                source_user_id = int(source_ids[0].strip())
+                source_ch_id   = int(source_ids[1].strip())
+                source_msg_id  = int(source_ids[2].strip())
+            else:
+                source_user_id = None
+                source_ch_id   = int(source_ids[1].strip())
+                source_msg_id  = int(source_ids[2].strip())
+
+            try: source_ch = await self.fetch_channel(source_ch_id)
+            except discord.NotFound:
+                await self.__report(
+                    f'[ WARNING ]\n'
+                    'Failed to reply to message: Cannot fetch channel\n'
+                )
+                return
+
+            try: source_msg = await source_ch.fetch_message(source_msg_id)
+            except discord.NotFound:
+                await self.__report(
+                    f'[ WARNING ]\n'
+                    'Failed to reply to message: Cannot fetch message\n'
+                )
+                return
+
+            content = \
+            ''.join(
+                f'{line}\n'
+                for line in ref_msg.content.split('\n')
+            ) + \
+            ''.join([
+                f'{line}\n'
+                for embed in ref_msg.embeds
+                for field in embed.fields
+                for line in field.value.split('\n')
+            ]) + \
+            '===================\n' + \
+            msg.content
+
+            await self.reply_msg(source_msg, content)
+            return
 
         if not msg.content.startswith(config.cmd_prefix):
             await msg.channel.send(self.db_get_info_msg())
