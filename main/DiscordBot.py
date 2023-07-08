@@ -29,6 +29,8 @@ class DiscordBot(discord.Client):
     __MSG_TYPE_USERS = 1
     __MSG_TYPE_CMDS  = 2
 
+    __DB_BOT_CFG_INFO_MSG = 0
+
     def __init__(self):
         intents = discord.Intents.default()
         intents.message_content = True
@@ -96,79 +98,15 @@ class DiscordBot(discord.Client):
 
     async def on_message(self, msg: discord.Message):
         try:
-            try: self.__prev_msg[msg.channel.id] = self.__curr_msg[msg.channel.id]
-            except KeyError:
-                pass
-
-            self.__curr_msg[msg.channel.id] = msg
-            self.__db_inc_msgs(msg, DiscordBot.__MSG_TYPE_TOTAL)
-
-            if msg.author.bot:
-                # Don't respond to bots
+            if isinstance(msg.guild, type(None)):
+                await self.__handle_dm_msg(msg)
                 return
 
-            self.__db_inc_msgs(msg, DiscordBot.__MSG_TYPE_USERS)
-
-            if msg.reference:
-                ref_msg = await msg.channel.fetch_message(msg.reference.message_id)
-                if ref_msg.author.id == self.user.id:
-                    # Message the devs if the user replies to the bot
-                    ref_content = \
-                    ''.join(
-                        f'> {line}\n'
-                        for line in ref_msg.content.split('\n')
-                    ) + \
-                    ''.join([
-                        f'> {line}\n'
-                        for embed in ref_msg.embeds
-                        for field in embed.fields
-                        for line in field.value.split('\n')
-                    ])
-
-                    await self.msg_dev(
-                        msg.guild, msg.author,
-                        f'{ref_content}\n'
-                        f'{msg.content}\n'
-                    )
-
-            if not msg.content.startswith(config.cmd_prefix):
-                # Responding to commands only
+            if msg.channel.id == self.__dbg_ch.id:
+                await self.__handle_dev_ch_msg(msg)
                 return
 
-            self.__db_inc_msgs(msg, DiscordBot.__MSG_TYPE_CMDS)
-
-            cmd = msg.content.lstrip(config.cmd_prefix)
-
-            args = cmd.split(' ')
-            cmd  = args[0]
-            args = args[1:]
-
-            if not msg.author.guild_permissions.manage_channels:
-                table = self.get_db_table('bot_en')
-                if not table.contains(doc_id=msg.channel.id):
-                    self.__logger.debug(
-                        f'{msg.guild.name}:#{msg.channel.name} @{msg.author.name} | "{config.cmd_prefix}{cmd} {" ".join(args)}"\n'
-                        'Ignoring command because channel does not have `bot_en` and user has no manage channel permission.'
-                    )
-                    return
-                else:
-                    data = table.get(doc_id=msg.channel.id)
-                    if not data['chan_en']:
-                        self.__logger.debug(
-                            f'{msg.guild.name}:#{msg.channel.name} @{msg.author.name} | "{config.cmd_prefix}{cmd} {" ".join(args)}"\n'
-                            'Ignoring command because channel does not have `bot_en` and user has no manage channel permission.'
-                        )
-                        return
-
-            if not cmd in self._cmds:
-                self.__logger.debug(f'"{cmd}" invalid cmd')
-                return
-
-            self.__bot_loop.create_task(self.__exec_cmd(cmd, msg, args))
-            self.__logger.debug(f'{cmd}:@{msg.author.name} -> {msg.guild.name}:#{msg.channel.name}')
-
-            self.__db_inc_cmd_count(msg.guild.id, cmd)
-
+            await self.__handle_server_msg(msg)
         except Exception as e:
             await self.__report(
                 f'Error: `on_message` crash\n'
@@ -312,6 +250,205 @@ class DiscordBot(discord.Client):
         await self._cmds['help']['func'](self, msg, cmd)
 
 
+    async def __handle_dm_msg(self, msg: discord.Message):
+        if msg.author.bot:
+            # Don't respond to bots
+            return
+
+        if msg.reference:
+            ref_msg = await msg.channel.fetch_message(msg.reference.message_id)
+
+            if ref_msg.author.id == self.user.id:
+                # Message the devs if the user replies to the bot
+                ref_content = \
+                ''.join(
+                    f'{line}\n'
+                    for line in ref_msg.content.split('\n')
+                ) + \
+                ''.join([
+                    f'{line}\n'
+                    for embed in ref_msg.embeds
+                    for field in embed.fields
+                    for line in field.value.split('\n')
+                ]) + \
+                '===================\n' + \
+                msg.content
+
+                await self.msg_dev(msg, f'{ref_content}\n')
+                return
+
+        if not msg.content.startswith(config.cmd_prefix):
+            await msg.channel.send(self.db_get_info_msg())
+            return
+
+        cmd = msg.content.lstrip(config.cmd_prefix)
+
+        args = cmd.split(' ')
+        cmd  = args[0]
+        args = args[1:]
+
+        if not cmd in self._cmds:
+            self.__logger.debug(f'"{cmd}" invalid cmd')
+            return
+
+        self.__bot_loop.create_task(self.__exec_cmd(cmd, msg, args))
+        self.__logger.debug(f'{cmd}:@{msg.author.name} -> DM')
+
+
+    async def __handle_server_msg(self, msg: discord.Message):
+        try: self.__prev_msg[msg.channel.id] = self.__curr_msg[msg.channel.id]
+        except KeyError:
+            pass
+
+        self.__curr_msg[msg.channel.id] = msg
+        self.__db_inc_msgs(msg, DiscordBot.__MSG_TYPE_TOTAL)
+
+        if msg.author.bot:
+            # Don't respond to bots
+            return
+
+        self.__db_inc_msgs(msg, DiscordBot.__MSG_TYPE_USERS)
+
+        if msg.reference:
+            ref_msg = await msg.channel.fetch_message(msg.reference.message_id)
+            if ref_msg.author.id == self.user.id:
+                # Message the devs if the user replies to the bot
+                ref_content = \
+                ''.join(
+                    f'{line}\n'
+                    for line in ref_msg.content.split('\n')
+                ) + \
+                ''.join([
+                    f'{line}\n'
+                    for embed in ref_msg.embeds
+                    for field in embed.fields
+                    for line in field.value.split('\n')
+                ]) + \
+                '===================\n' + \
+                msg.content
+
+                await self.msg_dev(msg, f'{ref_content}\n')
+                return
+
+        if not msg.content.startswith(config.cmd_prefix):
+            # Responding to commands only
+            return
+
+        self.__db_inc_msgs(msg, DiscordBot.__MSG_TYPE_CMDS)
+
+        cmd = msg.content.lstrip(config.cmd_prefix)
+
+        args = cmd.split(' ')
+        cmd  = args[0]
+        args = args[1:]
+
+        if not msg.author.guild_permissions.manage_channels:
+            table = self.get_db_table('bot_en')
+            if not table.contains(doc_id=msg.channel.id):
+                self.__logger.debug(
+                    f'{msg.guild.name}:#{msg.channel.name} @{msg.author.name} | "{config.cmd_prefix}{cmd} {" ".join(args)}"\n'
+                    'Ignoring command because channel does not have `bot_en` and user has no manage channel permission.'
+                )
+                return
+            else:
+                data = table.get(doc_id=msg.channel.id)
+                if not data['chan_en']:
+                    self.__logger.debug(
+                        f'{msg.guild.name}:#{msg.channel.name} @{msg.author.name} | "{config.cmd_prefix}{cmd} {" ".join(args)}"\n'
+                        'Ignoring command because channel does not have `bot_en` and user has no manage channel permission.'
+                    )
+                    return
+
+        if not cmd in self._cmds:
+            self.__logger.debug(f'"{cmd}" invalid cmd')
+            return
+
+        self.__bot_loop.create_task(self.__exec_cmd(cmd, msg, args))
+        self.__logger.debug(f'{cmd}:@{msg.author.name} -> {msg.guild.name}:#{msg.channel.name}')
+
+        self.__db_inc_cmd_count(msg.guild.id, cmd)
+
+
+    async def __handle_dev_ch_msg(self, msg: discord.Message):
+        if msg.author.bot:
+            # Don't respond to bots
+            return
+
+        if msg.reference:
+            ref_msg = await msg.channel.fetch_message(msg.reference.message_id)
+            if ref_msg.author.id == self.user.id:
+                # Message back the user if the dev replies to the bot
+                # Resolve channel ID
+                try:
+                    footer_text = ref_msg.embeds[0]._footer['text']
+                    source_ids = ref_msg.embeds[0]._footer['text'].split('|')[1].split('.')
+                except IndexError:
+                    await self.__report(
+                        f'[ WARNING ]\n'
+                        'Replied to wrong message probably\n'
+                    )
+                    return
+
+                if 'DM' in footer_text:
+                    source_user_id = int(source_ids[0].strip())
+                    source_ch_id   = int(source_ids[1].strip())
+                    source_msg_id  = int(source_ids[2].strip())
+                else:
+                    source_user_id = None
+                    source_ch_id   = int(source_ids[1].strip())
+                    source_msg_id  = int(source_ids[2].strip())
+
+                try: source_ch = await self.fetch_channel(source_ch_id)
+                except discord.NotFound:
+                    await self.__report(
+                        f'[ WARNING ]\n'
+                        'Failed to reply to message: Cannot fetch channel\n'
+                    )
+                    return
+
+                try: source_msg = await source_ch.fetch_message(source_msg_id)
+                except discord.NotFound:
+                    await self.__report(
+                        f'[ WARNING ]\n'
+                        'Failed to reply to message: Cannot fetch message\n'
+                    )
+                    return
+
+                content = \
+                ''.join(
+                    f'{line}\n'
+                    for line in ref_msg.content.split('\n')
+                ) + \
+                ''.join([
+                    f'{line}\n'
+                    for embed in ref_msg.embeds
+                    for field in embed.fields
+                    for line in field.value.split('\n')
+                ]) + \
+                '===================\n' + \
+                msg.content
+
+                await self.reply_msg(source_msg, content)
+                return
+
+        if not msg.content.startswith(config.cmd_prefix):
+            await msg.channel.send(self.db_get_info_msg())
+            return
+
+        cmd = msg.content.lstrip(config.cmd_prefix)
+
+        args = cmd.split(' ')
+        cmd  = args[0]
+        args = args[1:]
+
+        if not cmd in self._cmds:
+            self.__logger.debug(f'"{cmd}" invalid cmd')
+            return
+
+        self.__bot_loop.create_task(self.__exec_cmd(cmd, msg, args))
+        self.__logger.debug(f'{cmd}:@{msg.author.name} -> DM')
+
+
     async def __main_loop(self):
         self.__logger.info('Running main loop...')
 
@@ -396,18 +533,31 @@ class DiscordBot(discord.Client):
             )
 
 
-    async def msg_dev(self, server: discord.Guild, user: discord.User, msg: str):
-        msg = f'{msg.replace("```", "`​`​`")}'
-
-        try:
-            invites = await server.invites()
-            server_text = f'From [{server.name}]({invites[0]})'
-        except:
-            server_text = f'From {server.name} (id: {server.id})'
+    async def reply_msg(self, msg: discord.Message, content: str):
+        content = f'{content.replace("```", "`​`​`")}'
 
         embed = discord.Embed(color=0x0099FF)
-        embed.add_field(name=f'{user.name} (id: {user.id})', value=msg)
-        embed.set_thumbnail(url=user.avatar.url)
+        embed.add_field(name='dev reply', value=content)
+        await msg.reply(None, embed=embed)
+
+
+    async def msg_dev(self, msg: discord.Message, content: str):
+        content = f'{content.replace("```", "`​`​`")}'
+
+        if isinstance(msg.guild, type(None)):
+            server_text = f'From DM | {msg.author.id}.{msg.channel.id}.{msg.id}'
+        else:
+            try:
+                invites = await msg.guild.invites()
+                server_text = f'From [{msg.guild.name}]#[{msg.channel.name}] ({invites[0]}) | {msg.guild.id}.{msg.channel.id}.{msg.id}'
+            except:
+                server_text = f'From [{msg.guild.name}]#[{msg.channel.name}] | {msg.guild.id}.{msg.channel.id}.{msg.id}'
+
+        print(server_text)
+
+        embed = discord.Embed(color=0x0099FF)
+        embed.add_field(name=f'{msg.author.name} (id: {msg.author.id})', value=content)
+        embed.set_thumbnail(url=msg.author.avatar.url)
         embed.set_footer(text=server_text)
         await self.__dbg_ch.send(None, embed=embed)
 
@@ -432,6 +582,10 @@ class DiscordBot(discord.Client):
                 }
             }
         """
+        if isinstance(msg.guild, type(None)):
+            # Probably private DM
+            return
+
         table = self.get_db_table('bot_stats')
         entry = table.get(doc_id=msg.guild.id)
 

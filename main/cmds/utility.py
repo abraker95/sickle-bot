@@ -121,7 +121,7 @@ class CmdsUtility:
             'Message the devs a suggestion or issues'
     )
     async def devs(self: DiscordBot, msg: discord.Message, *args: str):
-        await self.msg_dev(msg.guild, msg.author, ' '.join(args))
+        await self.msg_dev(msg, ' '.join(args))
 
         embed = discord.Embed(color=0x0099FF, title='Your message has reached the devs!')
         await msg.channel.send(None, embed=embed)
