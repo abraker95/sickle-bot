@@ -2,7 +2,10 @@
 # that edits can be made in this dev location
 #
 # To be run as root
-su root
+if [ "$(whoami)" != "root" ]; then
+  echo 'Please run as root'
+  exit 255
+fi
 
 systemctl stop sickle.service
 
