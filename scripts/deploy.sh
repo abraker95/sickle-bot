@@ -13,7 +13,7 @@ mv /home/server/prod/sickle-bot/config.py /home/server/tmp/config.py
 mv /home/server/prod/sickle-bot/db.json /home/server/tmp/db.json
 
 rm -rf /home/server/prod/sickle-bot
-rsync -a --progress . /home/server/prod/sickle-bot --exclude config.py
+rsync -a --progress . /home/server/prod/sickle-bot --exclude config.py --exclude db.json
 chown -R server:server /home/server/prod/sickle-bot
 
 mv /home/server/tmp/config.py /home/server/prod/sickle-bot/config.py
@@ -24,5 +24,7 @@ chown root:server /home/server/prod/sickle-bot/db.json
 chmod 640 /home/server/prod/sickle-bot/db.json
 chown root:server /home/server/prod/sickle-bot/db.json
 chmod 660 /home/server/prod/sickle-bot/db.json
+
+chmod +x /home/server/prod/sickle-bot/scripts/run.sh
 
 systemctl start sickle.service
