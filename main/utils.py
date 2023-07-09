@@ -45,14 +45,15 @@ class DiscordCmdBase():
 
 
     @staticmethod
-    def DiscordEvent() -> typing.Callable:
+    def DiscordEvent(en: bool = True) -> typing.Callable:
 
         def wrapper(fn : typing.Callable) -> dict:
             return {
                 'func'    : fn,
                 'type'    : 'event',
                 'example' : '',
-                'help'    : ''
+                'help'    : '',
+                'en'      : en
             }
 
         return wrapper

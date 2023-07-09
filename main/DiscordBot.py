@@ -227,8 +227,9 @@ class DiscordBot(discord.Client):
         # Run events
         self.__logger.info('Initializing events...')
         for name, event in self._events.items():
-            self.__logger.info(f'    {name}')
-            self.__bot_loop.create_task(event['func'](self))
+            if event['en']:
+                self.__logger.info(f'    {name}')
+                self.__bot_loop.create_task(event['func'](self))
 
         # Present as ready
         self.__logger.info(f'Ready!')

@@ -205,7 +205,7 @@ class CmdsAdmin:
         await msg.channel.send(None, embed=status)
 
 
-    @DiscordCmdBase.DiscordEvent()
+    @DiscordCmdBase.DiscordEvent(en = False)
     async def user_engagement_task(self: DiscordBot):
         """
         Data fmt:
