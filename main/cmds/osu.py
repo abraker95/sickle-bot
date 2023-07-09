@@ -66,12 +66,12 @@ class CmdsOsu:
                     await msg.channel.send('Failed')
                     return
 
-                if 'msg' in reply: msg = str(reply['msg'])
-                else:              msg = 'Done' if reply['status'] == 0 else 'Failed'
+                if 'msg' in reply: content = str(reply['msg'])
+                else:              content = 'Done' if reply['status'] == 0 else 'Failed'
 
-                if   reply['status'] == -1: embed = discord.Embed(color=0x880000, description=msg)
-                elif reply['status'] ==  0: embed = discord.Embed(color=0x008800, description=msg)
-                else:                       embed = discord.Embed(color=0x880088, description=msg)
+                if   reply['status'] == -1: embed = discord.Embed(color=0x880000, description=content)
+                elif reply['status'] ==  0: embed = discord.Embed(color=0x008800, description=content)
+                else:                       embed = discord.Embed(color=0x880088, description=content)
 
                 await msg.channel.send(None, embed=embed)
 
