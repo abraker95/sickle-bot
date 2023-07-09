@@ -11,7 +11,14 @@ import datetime
 import config
 
 from main import DiscordCmdBase, DiscordBot
-from main.FeedServer import FeedServer
+
+__OLD_FEED_SERVER__ = True
+
+if __OLD_FEED_SERVER__:
+    from main.FeedServerOld import FeedServerOld
+else:
+    from main.FeedServer import FeedServer
+
 
 
 class CmdsOsu:
@@ -47,42 +54,78 @@ class CmdsOsu:
         # Send request to OT Feed Server
         reply = None
 
-        async with aiohttp.ClientSession() as session:
-            try:
-                async with session.put(f'http://127.0.0.1:{44444}/request', timeout=1, json=data) as response:
-                    if response.status != 200:
-                        await msg.channel.send('Failed')
-                        return
+        if __OLD_FEED_SERVER__:
+            async def handle_data(reply, msg: discord.Message):
+                if reply == None:
+                    warnings.warn('Cmd reply is none')
+                    await msg.channel.send('Something went horribly wrong!')
+                    return
 
-                    reply = await response.json()
-            except asyncio.TimeoutError:
-                await msg.channel.send('Timed out')
+                if not 'status' in reply:
+                    warnings.warn(f'Invalid data: {reply}')
+                    await msg.channel.send('Failed')
+                    return
+
+                if 'msg' in reply: msg = str(reply['msg'])
+                else:              msg = 'Done' if reply['status'] == 0 else 'Failed'
+
+                if   reply['status'] == -1: embed = discord.Embed(color=0x880000, description=msg)
+                elif reply['status'] ==  0: embed = discord.Embed(color=0x008800, description=msg)
+                else:                       embed = discord.Embed(color=0x880088, description=msg)
+
+                await msg.channel.send(None, embed=embed)
+
+            ret = await FeedServerOld.CtrlClient(44444, handle_data).request(data, (msg, ))
+            if not ret:
+                await msg.channel.send('Failed')
+        else:
+            async with aiohttp.ClientSession() as session:
+                try:
+                    async with session.post(f'http://127.0.0.1:{44444}/api', timeout=1, json=data) as response:
+                        if response.status != 200:
+                            await msg.channel.send('Failed')
+                            return
+
+                        reply = await response.json()
+                except asyncio.TimeoutError:
+                    await msg.channel.send('Timed out')
+                    return
+
+            # Parse reply from OT Feed Server
+            if isinstance(reply, type(None)):
+                warnings.warn('Received invalid reply from OT Feed Server: None')
+                await msg.channel.send('Received invalid reply from OT Feed Server')
                 return
 
-        # Parse reply from OT Feed Server
-        if isinstance(reply, type(None)):
-            warnings.warn('Received invalid reply from OT Feed Server: None')
-            await msg.channel.send('Received invalid reply from OT Feed Server')
-            return
+            if not 'status' in reply:
+                warnings.warn(f'Received invalid reply from OT Feed Server: {reply}')
+                await msg.channel.send('Received invalid reply from OT Feed Server')
+                return
 
-        if not 'status' in reply:
-            warnings.warn(f'Received invalid reply from OT Feed Server: {reply}')
-            await msg.channel.send('Received invalid reply from OT Feed Server')
-            return
+            if 'msg' in reply: txt = str(reply['msg'])
+            else:              txt = 'Done' if reply['status'] == 0 else 'Failed'
 
-        if 'msg' in reply: txt = str(reply['msg'])
-        else:              txt = 'Done' if reply['status'] == 0 else 'Failed'
+            txt = f'```\n{txt}\n```'
 
-        if reply['status'] == -1:  embed = discord.Embed(color=0x880000, description=txt)
-        elif reply['status'] == 0: embed = discord.Embed(color=0x008800, description=txt)
-        else:                      embed = discord.Embed(color=0x880088, description=txt)
+            if reply['status'] == -1:  embed = discord.Embed(color=0x880000, description=txt)
+            elif reply['status'] == 0: embed = discord.Embed(color=0x008800, description=txt)
+            else:                      embed = discord.Embed(color=0x880088, description=txt)
 
-        await msg.channel.send(f'```\n{txt}\n```')
+            await msg.channel.send(None, embed=embed)
 
 
-    @DiscordCmdBase.DiscordEvent()
-    async def forum_bot_feed(self: DiscordBot):
-        await FeedServer.init(lambda data: CmdsOsu.__handle_data(self, data))
+    if __OLD_FEED_SERVER__:
+        @DiscordCmdBase.DiscordEvent()
+        async def forum_bot_feed(self: DiscordBot):
+            data_reciever = FeedServerOld.DataReciever(55555, lambda data: CmdsOsu.__handle_data(self, data))
+            while True:
+                await asyncio.sleep(0.1)
+                await data_reciever.read_data((self,))
+
+    if not __OLD_FEED_SERVER__:
+        @DiscordCmdBase.DiscordEvent()
+        async def forum_bot_feed(self: DiscordBot):
+            await FeedServer.init(lambda data: CmdsOsu.__handle_data(self, data))
 
 
     @staticmethod

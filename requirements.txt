@@ -7,3 +7,4 @@ validators
 arrow
 pillow
 GitPython
+zmq

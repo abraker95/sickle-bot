@@ -125,7 +125,6 @@ class UvicornServerPatch(uvicorn.Server):
 
 
 
-
 class FeedServer():
 
     app = fastapi.FastAPI()
