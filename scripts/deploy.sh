@@ -13,7 +13,7 @@ mv /home/server/prod/sickle-bot/config.py /home/server/tmp/config.py
 mv /home/server/prod/sickle-bot/db.json /home/server/tmp/db.json
 
 rm -rf /home/server/prod/sickle-bot
-rsync -av --progress . /home/server/prod/sickle-bot --exclude config.py
+rsync -a --progress . /home/server/prod/sickle-bot --exclude config.py
 chown -R server:server /home/server/prod/sickle-bot
 
 mv /home/server/tmp/config.py /home/server/prod/sickle-bot/config.py
