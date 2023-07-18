@@ -312,7 +312,22 @@ class DiscordBot(discord.Client):
         self.__db_inc_msgs(msg, DiscordBot.__MSG_TYPE_USERS)
 
         if msg.reference:
-            ref_msg = await msg.channel.fetch_message(msg.reference.message_id)
+            try: ref_msg = await msg.channel.fetch_message(msg.reference.message_id)
+            except discord.NotFound:
+                await self.__report(
+                    f'[ WARNING ]\n'
+                    'Failed fetch reply to message\n'
+                    '-------------------------------'
+                    f'User:    {msg.author} ({msg.author.id})'
+                    f'Server:  {msg.guild.name} ({msg.guild.id}) -> ({msg.reference.guild_id})'
+                    f'Channel: {msg.channel.name} ({msg.channel.id}) -> ({msg.channel.category_id})'
+                    f'Message: {msg.id} -> {msg.reference.message_id}'
+                    f'Url:     {msg.jump_url} -> {msg.reference.jump_url}'
+                )
+
+                # TODO: Check if the bot have access to the channel
+                return
+
             if ref_msg.author.id != self.user.id:
                 return
 
