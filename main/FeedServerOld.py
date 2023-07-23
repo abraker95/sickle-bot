@@ -22,7 +22,7 @@ class FeedServerOld():
 
         async def read_data(self, args):
             if self.poller.poll(0.2*1000):
-                await self.handler(self.socket.recv_json(), *args)
+                await self.handler(self.socket.recv_json())
 
 
     class CtrlClient():
