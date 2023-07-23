@@ -3,6 +3,7 @@ import platform
 import asyncio
 import socket
 from typing import List, Optional, Sequence
+import warnings
 
 import uvicorn
 
@@ -136,7 +137,7 @@ class FeedServer():
         FeedServer.callback = callback
         FeedServer.logger = logging.getLogger('FeedServer')
 
-        FeedServer.logger.info('Initializing server: 127.0.0.1:5001')
+        FeedServer.logger.info(f'Initializing server: 127.0.0.1:{config.feed_server_port}')
         FeedServer.http_server = UvicornServerPatch(uvicorn.Config(app=FeedServer.app, host='127.0.0.1', port=config.feed_server_port, log_level='debug'))
         await FeedServer.http_server.serve()
 
@@ -182,13 +183,13 @@ class FeedServer():
         try:
             await FeedServer.callback(data)
         except KeyError as e:
-            FeedServer.logger.error(
+            warnings.warn(
                 f'Error processing "/post":\n'
                 f'Raised {type(e)}: {e}\n'
                 f'Data: {data}'
             )
         except Exception as e:
-            FeedServer.logger.error(
+            warnings.warn(
                 f'Error processing "/post":\n'
                 f'{Utils.format_exception(e)}'
             )
