@@ -19,7 +19,7 @@ class CmdsAdmin:
         help    =
             'Forcefully kill the bot.'
     )
-    async def kill(self: DiscordBot, msg: discord.Message, *args: str):
+    async def kill(self: DiscordBot, msg: discord.Message, *args: "list[str]"):
         if msg.author.id != config.admin_user_id:
             status = discord.Embed(title=':skull_crossbones: Sigma Shutting Down.', color=0x808080)
             await msg.channel.send(None, embed=status)
@@ -60,7 +60,7 @@ class CmdsAdmin:
         help    =
             'Pings the feed server.'
     )
-    async def feed_ping(self: DiscordBot, msg: discord.Message, *args: str):
+    async def feed_ping(self: DiscordBot, msg: discord.Message, *args: "list[str]"):
         if msg.author.id != config.admin_user_id:
             status = discord.Embed(title='You must be the bot admin to use this command', color=0x800000)
             await msg.channel.send(None, embed=status)
@@ -89,7 +89,7 @@ class CmdsAdmin:
         help    =
             'Executes raw python code. This should be used with caution.'
     )
-    async def eval(self: DiscordBot, msg: discord.Message, *args: str):
+    async def eval(self: DiscordBot, msg: discord.Message, *args: "list[str]"):
         if msg.author.id != config.admin_user_id:
             status = discord.Embed(title='You must be the bot admin to use this command', color=0x800000)
             await msg.channel.send(None, embed=status)
@@ -116,7 +116,7 @@ class CmdsAdmin:
         help    =
             'Prints this bots\'s stats'
     )
-    async def bot_stats(self: DiscordBot, msg: discord.Message, *args: str):
+    async def bot_stats(self: DiscordBot, msg: discord.Message, *args: "list[str]"):
         """
         Data fmt:
             "bot_stats" : {
@@ -160,7 +160,7 @@ class CmdsAdmin:
         help    =
             'Prints command usage stats for all servers'
     )
-    async def cmd_stats_all(self: DiscordBot, msg: discord.Message, *args: str):
+    async def cmd_stats_all(self: DiscordBot, msg: discord.Message, *args: "list[str]"):
         if msg.author.id != config.admin_user_id:
             status = discord.Embed(title='You must be the bot admin to use this command', color=0x800000)
             await msg.channel.send(None, embed=status)
@@ -193,7 +193,7 @@ class CmdsAdmin:
         help    =
             'Info message that gets printed when a user responds to the bot in DMs'
     )
-    async def cmd_set_info(self: DiscordBot, msg: discord.Message, *args: str):
+    async def cmd_set_info(self: DiscordBot, msg: discord.Message, *args: "list[str]"):
         if msg.author.id != config.admin_user_id:
             status = discord.Embed(title='You must be the bot admin to use this command', color=0x800000)
             await msg.channel.send(None, embed=status)

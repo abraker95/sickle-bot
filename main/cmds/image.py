@@ -31,7 +31,7 @@ class CmdsImage:
         help    =
             'Changes image zoom. Max zoom allowed: 4.0x'
     )
-    async def img_zoom(self: DiscordBot, msg: discord.Message, *args: str):
+    async def img_zoom(self: DiscordBot, msg: discord.Message, *args: "list[str]"):
         if len(args) not in [ 1, 2 ]:
             await self.run_help_cmd(msg, 'image.zoom')
             return
@@ -73,7 +73,7 @@ class CmdsImage:
         help    =
             'Inverts image colors'
     )
-    async def img_inv(self: DiscordBot, msg: discord.Message, *args: str):
+    async def img_inv(self: DiscordBot, msg: discord.Message, *args: "list[str]"):
         if len(args) not in [ 0, 1 ]:
             await self.run_help_cmd(msg, 'img.inv')
             return
@@ -108,7 +108,7 @@ class CmdsImage:
         help    =
             'Extracts the red (r), green (g), blue (b), or alpha (a) channel from the image'
     )
-    async def img_chan(self: DiscordBot, msg: discord.Message, *args: str):
+    async def img_chan(self: DiscordBot, msg: discord.Message, *args: "list[str]"):
         if len(args) not in [ 1, 2 ]:
             await self.run_help_cmd(msg, 'img.r')
             return
@@ -163,7 +163,7 @@ class CmdsImage:
         help    =
             'Extracts the red channel out of the image'
     )
-    async def img_r(self: DiscordBot, msg: discord.Message, *args: str):
+    async def img_r(self: DiscordBot, msg: discord.Message, *args: "list[str]"):
         await CmdsImage.img_chan['func'](self, msg, *(args[0], 'r'))
 
 
@@ -177,7 +177,7 @@ class CmdsImage:
         help    =
             'Extracts the green channel out of the image'
     )
-    async def img_g(self: DiscordBot, msg: discord.Message, *args: str):
+    async def img_g(self: DiscordBot, msg: discord.Message, *args: "list[str]"):
         await CmdsImage.img_chan['func'](self, msg, *(args[0], 'g'))
 
 
@@ -191,7 +191,7 @@ class CmdsImage:
         help    =
             'Extracts the blue channel out of the image'
     )
-    async def img_b(self: DiscordBot, msg: discord.Message, *args: str):
+    async def img_b(self: DiscordBot, msg: discord.Message, *args: "list[str]"):
         await CmdsImage.img_chan['func'](self, msg, *(args[0], 'b'))
 
 
@@ -205,7 +205,7 @@ class CmdsImage:
         help    =
             'Extracts the alpha channel out of the image'
     )
-    async def img_a(self: DiscordBot, msg: discord.Message, *args: str):
+    async def img_a(self: DiscordBot, msg: discord.Message, *args: "list[str]"):
         await CmdsImage.img_chan['func'](self, msg, *(args[0], 'a'))
 
 

@@ -22,7 +22,7 @@ class CmdsRoles:
             'role name. Requires the user who calls the command to have '
             'the Administrator permision.'
     )
-    async def autorole(self: DiscordBot, msg: discord.Message, *args: str):
+    async def autorole(self: DiscordBot, msg: discord.Message, *args: "list[str]"):
         if len(args) != 1:
             await self.run_help_cmd(msg, 'autorole')
             return
@@ -38,7 +38,7 @@ class CmdsRoles:
             'Creates a new role on the server. Requires the user who calls '
             'the command to have the Manage Roles permision.'
     )
-    async def createrole(self: DiscordBot, msg: discord.Message, *args: str):
+    async def createrole(self: DiscordBot, msg: discord.Message, *args: "list[str]"):
         if len(args) != 1:
             await self.run_help_cmd(msg, 'createrole')
             return
@@ -70,7 +70,7 @@ class CmdsRoles:
             'Destroy an existing role on the server. Requires the user who '
             'calls the command to have the Manage Roles permision'
     )
-    async def destroyrole(self: DiscordBot, msg: discord.Message, *args: str):
+    async def destroyrole(self: DiscordBot, msg: discord.Message, *args: "list[str]"):
         if len(args) != 1:
             await self.run_help_cmd(msg, 'destroyrole')
             return
@@ -106,7 +106,7 @@ class CmdsRoles:
             'list of self assignable roles can be seen with the selfroles '
             'command.'
     )
-    async def togglerole(self: DiscordBot, msg: discord.Message, *args: str):
+    async def togglerole(self: DiscordBot, msg: discord.Message, *args: "list[str]"):
         if len(args) != 1:
             await self.run_help_cmd(msg, 'togglerole')
             return
@@ -172,7 +172,7 @@ class CmdsRoles:
             'Makes a role self assignable. Requires the user who calls the command '
             'to have the Manage Roles permision.'
     )
-    async def addselfrole(self: DiscordBot, msg: discord.Message, *args: str):
+    async def addselfrole(self: DiscordBot, msg: discord.Message, *args: "list[str]"):
         """
         Data fmt:
             "self_roles": {
@@ -226,7 +226,7 @@ class CmdsRoles:
             'Makes a role no longer self assignable. Requires the user who calls the '
             'command to have the Manage Roles permision.'
     )
-    async def delselfrole(self: DiscordBot, msg: discord.Message, *args: str):
+    async def delselfrole(self: DiscordBot, msg: discord.Message, *args: "list[str]"):
         """
         Data fmt:
             "self_roles": {
@@ -283,7 +283,7 @@ class CmdsRoles:
         help    =
             'Lists all the roles the user can assign to themselves, or another user can assign to themselves.'
     )
-    async def selfroles(self: DiscordBot, msg: discord.Message, *args: str):
+    async def selfroles(self: DiscordBot, msg: discord.Message, *args: "list[str]"):
         """
         Data fmt:
             "self_roles": {
@@ -315,7 +315,7 @@ class CmdsRoles:
         help    =
             'Lists all the roles on the server and the total number of roles.'
     )
-    async def roles(self: DiscordBot, msg: discord.Message, *args: str):
+    async def roles(self: DiscordBot, msg: discord.Message, *args: "list[str]"):
         roles_names = list([ role.name for role in msg.guild.roles ])
 
         role_list = '\n'.join(roles_names)

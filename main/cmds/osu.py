@@ -15,6 +15,8 @@ from main import DiscordCmdBase, DiscordBot
 __OLD_FEED_SERVER__ = False
 
 if __OLD_FEED_SERVER__:
+    import datetime
+
     from main.FeedServerOld import FeedServerOld
 else:
     from main.FeedServer import FeedServer
@@ -32,7 +34,7 @@ class CmdsOsu:
         help    =
             'Access forum bot endpoint'
     )
-    async def forum_bot(self: DiscordBot, msg: discord.Message, *args: str):
+    async def forum_bot(self: DiscordBot, msg: discord.Message, *args: "list[str]"):
         # Parse args
         if len(args) < 1:
             await self.run_help_cmd(msg, 'forum.bot')
@@ -115,6 +117,7 @@ class CmdsOsu:
 
 
     if __OLD_FEED_SERVER__:
+
         @DiscordCmdBase.DiscordEvent()
         async def forum_bot_feed(self: DiscordBot):
             data_reciever = FeedServerOld.DataReciever(55555, lambda data: CmdsOsu.__handle_data(self, data))

@@ -15,7 +15,7 @@ class CmdsModeration:
         help    =
             'Enable/Disable the bot in the channel.'
     )
-    async def bot_en(self: DiscordBot, msg: discord.Message, *args: str):
+    async def bot_en(self: DiscordBot, msg: discord.Message, *args: "list[str]"):
         """
         Data fmt:
             "bot_en": {
@@ -58,7 +58,7 @@ class CmdsModeration:
         help    =
             'Set this channel to be THE bot channel. Or use it in this channel again to undo.'
     )
-    async def bot_set_ch(self: DiscordBot, msg: discord.Message, *args: str):
+    async def bot_set_ch(self: DiscordBot, msg: discord.Message, *args: "list[str]"):
         """
         Data fmt:
             "bot_ch": {
@@ -103,7 +103,7 @@ class CmdsModeration:
         help    =
             'Displays currently set bot channel (if there is one).'
     )
-    async def bot_get_ch(self: DiscordBot, msg: discord.Message, *args: str):
+    async def bot_get_ch(self: DiscordBot, msg: discord.Message, *args: "list[str]"):
         """
         Data fmt:
             "bot_ch": {
@@ -133,3 +133,4 @@ class CmdsModeration:
         embed = discord.Embed(title=f'Bot channel: #{channel.name}', color=0x1ABC9C)
         await msg.channel.send(None, embed=embed)
         return
+

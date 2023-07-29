@@ -30,7 +30,7 @@ class CmdsUtility:
             'Returns the list of command modules or gives you the '
             'description and usage for a selected command.'
     )
-    async def help(self: DiscordBot, msg: discord.Message, cmd: Optional[str] = None, *args: str):
+    async def help(self: DiscordBot, msg: discord.Message, cmd: Optional[str] = None, *args: "list[str]"):
         if isinstance(cmd, type(None)):
             modules_text = '\n'.join(self._modules)
 
@@ -96,7 +96,7 @@ class CmdsUtility:
         help    =
             'Shows the commands in a specific module group.'
     )
-    async def commands(self: DiscordBot, msg: discord.Message, module: str = None, *args: str):
+    async def commands(self: DiscordBot, msg: discord.Message, module: str = None, *args: "list[str]"):
         if isinstance(module, type(None)):
             embed = discord.Embed(color=0x696969, title='🔍 Please Enter a Module Name.')
             embed.set_footer(text=f'The module groups can be seen with the {config.cmd_prefix}help command.')
@@ -120,7 +120,7 @@ class CmdsUtility:
         help    =
             'Message the devs a suggestion or issues'
     )
-    async def devs(self: DiscordBot, msg: discord.Message, *args: str):
+    async def devs(self: DiscordBot, msg: discord.Message, *args: "list[str]"):
         await self.msg_dev(msg, ' '.join(args))
 
         embed = discord.Embed(color=0x0099FF, title='Your message has reached the devs!')
@@ -134,7 +134,7 @@ class CmdsUtility:
         help    =
             'Just prints "pong!". Useful to know if the bot is up'
     )
-    async def ping(self: DiscordBot, msg: discord.Message, *args: str):
+    async def ping(self: DiscordBot, msg: discord.Message, *args: "list[str]"):
         ms = arrow.utcnow().timestamp() - msg.created_at.timestamp()
         embed = discord.Embed(title=f'Pong! ({ms:.2f} s)', color=0x0099FF)
         await msg.channel.send(None, embed=embed)
@@ -147,7 +147,7 @@ class CmdsUtility:
         help    =
             'Prints command usage stats for this server'
     )
-    async def cmd_stats(self: DiscordBot, msg: discord.Message, *args: str):
+    async def cmd_stats(self: DiscordBot, msg: discord.Message, *args: "list[str]"):
         if msg.author.id != config.admin_user_id:
             status = discord.Embed(title='You must be the bot admin to use this command', color=0x800000)
             await msg.channel.send(None, embed=status)
@@ -180,7 +180,7 @@ class CmdsUtility:
         help    =
             'Generates a color from the given HEX code or provided RGB numbers.'
     )
-    async def color(self: DiscordBot, msg: discord.Message, *args: str):
+    async def color(self: DiscordBot, msg: discord.Message, *args: "list[str]"):
         if len(args) == 0:
             await self.run_help_cmd(msg, 'color')
             return
@@ -219,7 +219,7 @@ class CmdsUtility:
         help    =
             'Shows the avatar of the user. (in the form of a direct link)'
     )
-    async def avatar(self: DiscordBot, msg: discord.Message, *args: str):
+    async def avatar(self: DiscordBot, msg: discord.Message, *args: "list[str]"):
         target = msg.mentions[0] if msg.mentions else msg.author
 
         embed = discord.Embed(color=target.color)
@@ -234,7 +234,7 @@ class CmdsUtility:
         help    =
             'Shows the User ID of the mentioned user. If no user is mentioned, it will show your ID instead.'
     )
-    async def uid(self: DiscordBot, msg: discord.Message, *args: str):
+    async def uid(self: DiscordBot, msg: discord.Message, *args: "list[str]"):
         user = msg.mentions[0] if msg.mentions else msg.author
 
         embed = discord.Embed(color=user.color)
@@ -249,7 +249,7 @@ class CmdsUtility:
         help    =
             'Generates a discord timestamp from the date given'
     )
-    async def timestamp(self: DiscordBot, msg: discord.Message, *args: str):
+    async def timestamp(self: DiscordBot, msg: discord.Message, *args: "list[str]"):
         if isinstance(args, type(None)):
             await self.run_help_cmd(msg, 'timestamp')
             return
@@ -284,7 +284,7 @@ class CmdsUtility:
         help    =
             'Repeats the given text.'
     )
-    async def echo(self: DiscordBot, msg: discord.Message, *args: str):
+    async def echo(self: DiscordBot, msg: discord.Message, *args: "list[str]"):
         await msg.channel.send(msg.content)
 
 
@@ -296,7 +296,7 @@ class CmdsUtility:
             'Creates a poll with the items from the inputted list. '
             'Separate list items with a semicolon and a space.'
     )
-    async def poll(self: DiscordBot, msg: discord.Message, *args: str):
+    async def poll(self: DiscordBot, msg: discord.Message, *args: "list[str]"):
         if isinstance(args, type(None)):
             reply = discord.Embed(type='rich', color=0xDB0000, title='❗ Missing Arguments.')
             await msg.channel.send(None, embed=reply)
@@ -346,7 +346,7 @@ class CmdsUtility:
         help    =
             'Sets a timer in seconds and displays the message input after it\'s done.'
     )
-    async def remind(self: DiscordBot, msg: discord.Message, *args: str):
+    async def remind(self: DiscordBot, msg: discord.Message, *args: "list[str]"):
         """
         Data fmt:
             "reminders": {
@@ -423,7 +423,7 @@ class CmdsUtility:
             'Shows you a list of up to five pending reminders that you made. '
             'Input a number after the command to see more details about that reminder.'
     )
-    async def reminders(self: DiscordBot, msg: discord.Message, *args: str):
+    async def reminders(self: DiscordBot, msg: discord.Message, *args: "list[str]"):
         table = self.get_db_table('reminders')
         entries = table.search(tinydb.Query().fragment({ 'server_id' : msg.guild.id, 'user_id' : msg.author.id }))
 
@@ -489,7 +489,7 @@ class CmdsUtility:
             'TECHNICALLY does not have a limit but the bigger you use, the bigger '
             'the message, which just looks plain spammy.'
     )
-    async def roll(self: DiscordBot, msg: discord.Message, *args: str):
+    async def roll(self: DiscordBot, msg: discord.Message, *args: "list[str]"):
         end_range = None
 
         if len(args) > 0:
@@ -516,7 +516,7 @@ class CmdsUtility:
             'The bot will select a thing from the inputed list. Separate list '
             'items with a space.'
     )
-    async def choose(self: DiscordBot, msg: discord.Message, *args: str):
+    async def choose(self: DiscordBot, msg: discord.Message, *args: "list[str]"):
         if len(args) == 0:
             await self.run_help_cmd(msg, 'choose')
             return
@@ -533,7 +533,7 @@ class CmdsUtility:
         help    =
             'Shows information about the server the command was used on.'
     )
-    async def serverinfo(self: DiscordBot, msg: discord.Message, *args: str):
+    async def serverinfo(self: DiscordBot, msg: discord.Message, *args: "list[str]"):
         bot_count = 0
         user_count = 0
 
@@ -569,7 +569,7 @@ class CmdsUtility:
             'Shows information about the mentioned user. If no user is mentioned, '
             'it will show information about you, instead.'
     )
-    async def userinfo(self: DiscordBot, msg: discord.Message, *args: str):
+    async def userinfo(self: DiscordBot, msg: discord.Message, *args: "list[str]"):
         user = msg.mentions[0] if len(args) > 0 else msg.author
 
         embed = discord.Embed(title=f'{user.name} Information', color=user.color)
