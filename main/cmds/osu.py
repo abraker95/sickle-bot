@@ -5,7 +5,7 @@ import warnings
 
 from main import DiscordCmdBase, DiscordBot
 
-__OLD_FEED_SERVER__ = False
+__OLD_FEED_SERVER__ = True
 
 if __OLD_FEED_SERVER__:
     import datetime
