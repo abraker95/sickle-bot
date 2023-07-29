@@ -22,9 +22,10 @@ class CmdsUtility:
 
     @staticmethod
     @DiscordCmdBase.DiscordCmd(
-        perm    =  DiscordCmdBase.ANYONE,
-        example = f'{DiscordBot.cmd_prefix}help [command]',
-        help    =
+        perm     =  DiscordCmdBase.ANYONE,
+        anywhere = True,
+        example  = f'{DiscordBot.cmd_prefix}help [command]',
+        help     =
             'Returns the list of command modules or gives you the '
             'description and usage for a selected command.'
     )
@@ -89,9 +90,10 @@ class CmdsUtility:
 
     @staticmethod
     @DiscordCmdBase.DiscordCmd(
-        perm    = DiscordCmdBase.ANYONE,
-        example = f'{DiscordBot.cmd_prefix}commands Games',
-        help    =
+        perm     = DiscordCmdBase.ANYONE,
+        anywhere = True,
+        example  = f'{DiscordBot.cmd_prefix}commands Games',
+        help     =
             'Shows the commands in a specific module group.'
     )
     async def commands(self: DiscordBot, msg: discord.Message, module: str = None, *args: "list[str]"):
@@ -113,9 +115,10 @@ class CmdsUtility:
 
     @staticmethod
     @DiscordCmdBase.DiscordCmd(
-        perm    = DiscordCmdBase.ANYONE,
-        example = f'{DiscordBot.cmd_prefix}devs A command that gives sickle a cookie :cookie:',
-        help    =
+        perm     = DiscordCmdBase.ANYONE,
+        anywhere = True,
+        example  = f'{DiscordBot.cmd_prefix}devs A command that gives sickle a cookie :cookie:',
+        help     =
             'Message the devs a suggestion or issues'
     )
     async def devs(self: DiscordBot, msg: discord.Message, *args: "list[str]"):
@@ -127,9 +130,10 @@ class CmdsUtility:
 
     @staticmethod
     @DiscordCmdBase.DiscordCmd(
-        perm    = DiscordCmdBase.ANYONE,
-        example = f'{DiscordBot.cmd_prefix}ping',
-        help    =
+        perm     = DiscordCmdBase.ANYONE,
+        anywhere = True,
+        example  = f'{DiscordBot.cmd_prefix}ping',
+        help     =
             'Just prints "pong!". Useful to know if the bot is up'
     )
     async def ping(self: DiscordBot, msg: discord.Message, *args: "list[str]"):

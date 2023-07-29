@@ -383,21 +383,22 @@ class DiscordBot(discord.Client):
         args = args[1:]
 
         if not msg.author.guild_permissions.manage_channels:
-            table = self.get_db_table('bot_en')
-            if not table.contains(doc_id=msg.channel.id):
-                self.__logger.debug(
-                    f'{msg.guild.name}:#{msg.channel.name} @{msg.author.name} | "{self.cmd_prefix}{cmd} {" ".join(args)}"\n'
-                    'Ignoring command because channel does not have `bot_en` and user has no manage channel permission.'
-                )
-                return
-            else:
-                data = table.get(doc_id=msg.channel.id)
-                if not data['chan_en']:
+            if not self._cmds['anywhere']:
+                table = self.get_db_table('bot_en')
+                if not table.contains(doc_id=msg.channel.id):
                     self.__logger.debug(
                         f'{msg.guild.name}:#{msg.channel.name} @{msg.author.name} | "{self.cmd_prefix}{cmd} {" ".join(args)}"\n'
-                        'Ignoring command because channel does not have `chan_en` and user has no manage channel permission.'
+                        'Ignoring command because channel does not have `bot_en` and user has no manage channel permission.'
                     )
                     return
+                else:
+                    data = table.get(doc_id=msg.channel.id)
+                    if not data['chan_en']:
+                        self.__logger.debug(
+                            f'{msg.guild.name}:#{msg.channel.name} @{msg.author.name} | "{self.cmd_prefix}{cmd} {" ".join(args)}"\n'
+                            'Ignoring command because channel does not have `chan_en` and user has no manage channel permission.'
+                        )
+                        return
 
         if not cmd in self._cmds:
             self.__logger.debug(f'"{cmd}" invalid cmd')

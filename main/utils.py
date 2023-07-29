@@ -25,7 +25,7 @@ class DiscordCmdBase():
     ANYONE        = 3  # Anyone can use the command
 
     @staticmethod
-    def DiscordCmd(perm: int, example: str, help: str) -> typing.Callable:
+    def DiscordCmd(perm: int = MODERATOR, anywhere: bool = False, example: str = '', help: str = '') -> typing.Callable:
         # TODO: Add built-in permissions
         #   - DiscordCmdBase.ADMIN - Only admin can use
         #   - DiscordCmdBase.PERM([ x0, x1, ... ]) - Command requires permissions x0, x1, etc
@@ -34,11 +34,12 @@ class DiscordCmdBase():
 
         def wrapper(fn : typing.Callable) -> dict:
             return {
-                'func'    : fn,
-                'type'    : 'cmd',
-                'perm'    : perm,
-                'example' : example,
-                'help'    : help
+                'func'     : fn,
+                'type'     : 'cmd',
+                'perm'     : perm,
+                'anywhere' : anywhere,
+                'example'  : example,
+                'help'     : help
             }
 
         return wrapper

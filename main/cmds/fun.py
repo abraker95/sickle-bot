@@ -11,9 +11,10 @@ class CmdsFun:
 
     @staticmethod
     @DiscordCmdBase.DiscordCmd(
-        perm    = DiscordCmdBase.ANYONE,
-        example = f'{DiscordBot.cmd_prefix}boom',
-        help    =
+        perm     = DiscordCmdBase.ANYONE,
+        anywhere = True,
+        example  = f'{DiscordBot.cmd_prefix}boom',
+        help     =
             'Sets off a bomb'
     )
     async def boom(self: DiscordBot, msg: discord.Message, *args: "list[str]"):
