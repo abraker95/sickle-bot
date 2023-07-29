@@ -111,9 +111,10 @@ class DiscordBot(discord.Client):
                 await self.__handle_dm_msg(msg)
                 return
 
-            if msg.channel.id == self.__dbg_ch.id:
-                await self.__handle_dev_ch_msg(msg)
-                return
+            if not isinstance(self.__dbg_ch, type(None)):
+                if msg.channel.id == self.__dbg_ch.id:
+                    await self.__handle_dev_ch_msg(msg)
+                    return
 
             await self.__handle_server_msg(msg)
         except Exception as e:
