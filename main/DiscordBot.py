@@ -400,14 +400,23 @@ class DiscordBot(discord.Client):
                         )
                         return
 
-        if not cmd in self._cmds:
-            self.__logger.debug(f'"{cmd}" invalid cmd')
+        # Built-in command
+        if cmd in self._cmds:
+            self.__bot_loop.create_task(self.__exec_cmd(cmd, msg, args))
+            self.__logger.debug(f'{cmd}:@{msg.author.name} -> {msg.guild.name}:#{msg.channel.name}')
+
+            self.__db_inc_cmd_count(msg.guild.id, cmd)
             return
 
-        self.__bot_loop.create_task(self.__exec_cmd(cmd, msg, args))
-        self.__logger.debug(f'{cmd}:@{msg.author.name} -> {msg.guild.name}:#{msg.channel.name}')
+        # Server specific custom command
+        if f'{msg.guild.id}_{cmd}' in self._cmds:
+            self.__bot_loop.create_task(self.__exec_cmd(f'{msg.guild.id}_{cmd}', msg, args))
+            self.__logger.debug(f'{cmd}:@{msg.author.name} -> {msg.guild.name}:#{msg.channel.name}')
 
-        self.__db_inc_cmd_count(msg.guild.id, cmd)
+            self.__db_inc_cmd_count(msg.guild.id, cmd)
+            return
+
+        self.__logger.debug(f'"{cmd}" invalid cmd')
 
 
     async def __handle_dev_ch_msg(self, msg: discord.Message):
@@ -483,12 +492,23 @@ class DiscordBot(discord.Client):
         cmd  = args[0]
         args = args[1:]
 
-        if not cmd in self._cmds:
-            self.__logger.debug(f'"{cmd}" invalid cmd')
+        # Built-in command
+        if cmd in self._cmds:
+            self.__bot_loop.create_task(self.__exec_cmd(cmd, msg, args))
+            self.__logger.debug(f'{cmd}:@{msg.author.name} -> DM')
+
+            self.__db_inc_cmd_count(msg.guild.id, cmd)
             return
 
-        self.__bot_loop.create_task(self.__exec_cmd(cmd, msg, args))
-        self.__logger.debug(f'{cmd}:@{msg.author.name} -> DM')
+        # Server specific custom command
+        if f'{msg.guild.id}_{cmd}' in self._cmds:
+            self.__bot_loop.create_task(self.__exec_cmd(f'{msg.guild.id}_{cmd}', msg, args))
+            self.__logger.debug(f'{cmd}:@{msg.author.name} -> DM')
+
+            self.__db_inc_cmd_count(msg.guild.id, cmd)
+            return
+
+        self.__logger.debug(f'"{cmd}" invalid cmd')
 
 
     async def __main_loop(self):
