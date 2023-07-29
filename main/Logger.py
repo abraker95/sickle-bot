@@ -1,28 +1,20 @@
 import logging
 import traceback
-import config
-import pathlib
-import os
+import functools
 
 
+class Logger(logging.Logger):
 
-if not os.path.exists(config.log_path):
-    os.makedirs(config.log_path)
-
-
-
-class Logger(logging.getLoggerClass()):
-
-    def __init__(self, name, level=logging.NOTSET):
-        super().__init__(name, level=logging.DEBUG)
+    def __init__(self, log_path: str, is_dbg: str, name: str, level: int = logging.NOTSET):
+        logging.Logger.__init__(self, name, level=logging.DEBUG)
 
         formatter = logging.Formatter('%(levelname)s  %(asctime)s   [ %(name)s ] %(message)s')
 
         self.sh = logging.StreamHandler()
         self.sh.setFormatter(formatter)
 
-        if 'db' in config.runtime_mode: self.sh.setLevel(logging.DEBUG)
-        else:                           self.sh.setLevel(logging.INFO)
+        if is_dbg: self.sh.setLevel(logging.DEBUG)
+        else:      self.sh.setLevel(logging.INFO)
 
         self.addHandler(self.sh)
 
@@ -31,7 +23,7 @@ class Logger(logging.getLoggerClass()):
         #   if over 1MB, then rename current logging file to '{start_date}_{end_date}_{logger_name}.log'
         #   cut-paste into logging folder named '{logger_name}'
 
-        self.fh = logging.FileHandler(str(config.log_path / (name + '.log')), encoding='utf-32')
+        self.fh = logging.FileHandler(f'{log_path}/{name}.log')
         self.fh.setFormatter(formatter)
         self.fh.setLevel(logging.INFO)
         self.addHandler(self.fh)
@@ -60,7 +52,16 @@ class Logger(logging.getLoggerClass()):
             self.critical(msg)
     '''
 
+
     def exception(self, msg):
         msg = msg.strip()
         msg += '\n' + traceback.format_exc()
         self.critical(msg)
+
+
+def LoggerClass(log_path, is_dbg):
+
+    class LoggerClassFull(Logger):
+        __init__ = functools.partialmethod(Logger.__init__, log_path, is_dbg)
+
+    return LoggerClassFull

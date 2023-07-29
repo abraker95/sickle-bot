@@ -1,10 +1,7 @@
 import discord
-import config
-import requests
 import warnings
 
 import tinydb
-from tinydb.table import Document
 
 from main import DiscordCmdBase, DiscordBot
 
@@ -15,7 +12,7 @@ class CmdsRoles:
     @staticmethod
     @DiscordCmdBase.DiscordCmd(
         perm    = DiscordCmdBase.ADMINISTRATOR,
-        example = f'{config.cmd_prefix}autorole Wizard',
+        example = f'{DiscordBot.cmd_prefix}autorole Wizard',
         help    =
             'Sets the role that should be given to the users that join '
             'the server. To disable the autorole input disable as the '
@@ -33,7 +30,7 @@ class CmdsRoles:
     @staticmethod
     @DiscordCmdBase.DiscordCmd(
         perm    = DiscordCmdBase.MODERATOR,
-        example = f'{config.cmd_prefix}createrole Cheese',
+        example = f'{DiscordBot.cmd_prefix}createrole Cheese',
         help    =
             'Creates a new role on the server. Requires the user who calls '
             'the command to have the Manage Roles permision.'
@@ -65,7 +62,7 @@ class CmdsRoles:
     @staticmethod
     @DiscordCmdBase.DiscordCmd(
         perm    = DiscordCmdBase.MODERATOR,
-        example = f'{config.cmd_prefix}destroyrole Blergh',
+        example = f'{DiscordBot.cmd_prefix}destroyrole Blergh',
         help    =
             'Destroy an existing role on the server. Requires the user who '
             'calls the command to have the Manage Roles permision'
@@ -99,7 +96,7 @@ class CmdsRoles:
     @staticmethod
     @DiscordCmdBase.DiscordCmd(
         perm    = DiscordCmdBase.ANYONE,
-        example = f'{config.cmd_prefix}togglerole Wizard',
+        example = f'{DiscordBot.cmd_prefix}togglerole Wizard',
         help    =
             'Assigns you or removes you from one of the self assignable roles. '
             'Self assignable roles are added via the addselfrole command. A '
@@ -167,7 +164,7 @@ class CmdsRoles:
     @staticmethod
     @DiscordCmdBase.DiscordCmd(
         perm    = DiscordCmdBase.MODERATOR,
-        example = f'{config.cmd_prefix}addselfrole Cheese',
+        example = f'{DiscordBot.cmd_prefix}addselfrole Cheese',
         help    =
             'Makes a role self assignable. Requires the user who calls the command '
             'to have the Manage Roles permision.'
@@ -221,7 +218,7 @@ class CmdsRoles:
     @staticmethod
     @DiscordCmdBase.DiscordCmd(
         perm    = DiscordCmdBase.MODERATOR,
-        example = f'{config.cmd_prefix}delselfrole Cheese',
+        example = f'{DiscordBot.cmd_prefix}delselfrole Cheese',
         help    =
             'Makes a role no longer self assignable. Requires the user who calls the '
             'command to have the Manage Roles permision.'
@@ -279,7 +276,7 @@ class CmdsRoles:
     @staticmethod
     @DiscordCmdBase.DiscordCmd(
         perm    = DiscordCmdBase.ANYONE,
-        example = f'{config.cmd_prefix}selfroles',
+        example = f'{DiscordBot.cmd_prefix}selfroles',
         help    =
             'Lists all the roles the user can assign to themselves, or another user can assign to themselves.'
     )
@@ -311,7 +308,7 @@ class CmdsRoles:
     @staticmethod
     @DiscordCmdBase.DiscordCmd(
         perm    = DiscordCmdBase.ANYONE,
-        example = f'{config.cmd_prefix}roles',
+        example = f'{DiscordBot.cmd_prefix}roles',
         help    =
             'Lists all the roles on the server and the total number of roles.'
     )

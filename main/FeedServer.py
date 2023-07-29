@@ -9,8 +9,8 @@ import uvicorn
 
 import logging
 import fastapi
-import config
 
+from main import DiscordBot
 from main.utils import Utils
 
 
@@ -132,13 +132,12 @@ class FeedServer():
 
     @staticmethod
     async def init(callback):
-        is_debug = 'db' in config.runtime_mode
-        #FeedServer.app.config['DEBUG'] = is_debug
         FeedServer.callback = callback
         FeedServer.logger = logging.getLogger('FeedServer')
 
-        FeedServer.logger.info(f'Initializing server: 127.0.0.1:{config.feed_server_port}')
-        FeedServer.http_server = UvicornServerPatch(uvicorn.Config(app=FeedServer.app, host='127.0.0.1', port=config.feed_server_port, log_level='debug'))
+        feed_server_port = DiscordBot.get_cfg('Core', 'feed_server_port')
+        FeedServer.logger.info(f'Initializing server: 127.0.0.1:{feed_server_port}')
+        FeedServer.http_server = UvicornServerPatch(uvicorn.Config(app=FeedServer.app, host='127.0.0.1', port=feed_server_port, log_level='info'))
         await FeedServer.http_server.serve()
 
 

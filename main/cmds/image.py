@@ -1,10 +1,7 @@
 from typing import Optional
 
 import discord
-import config
-import asyncio
 import requests
-import random
 import warnings
 import validators
 
@@ -26,8 +23,8 @@ class CmdsImage:
         perm    = DiscordCmdBase.ANYONE,
         example =
             '\n'
-            f'{config.cmd_prefix}img.zoom 2.3\n'
-            f'{config.cmd_prefix}img.zoom https://imgur.com/43ssfs 2.3',
+            f'{DiscordBot.cmd_prefix}img.zoom 2.3\n'
+            f'{DiscordBot.cmd_prefix}img.zoom https://imgur.com/43ssfs 2.3',
         help    =
             'Changes image zoom. Max zoom allowed: 4.0x'
     )
@@ -68,8 +65,8 @@ class CmdsImage:
         perm    = DiscordCmdBase.ANYONE,
         example =
             '\n'
-            f'{config.cmd_prefix}img.inv\n'
-            f'{config.cmd_prefix}img.inv https://imgur.com/43ssfs',
+            f'{DiscordBot.cmd_prefix}img.inv\n'
+            f'{DiscordBot.cmd_prefix}img.inv https://imgur.com/43ssfs',
         help    =
             'Inverts image colors'
     )
@@ -103,8 +100,8 @@ class CmdsImage:
         perm    = DiscordCmdBase.ANYONE,
         example =
             '\n'
-            f'{config.cmd_prefix}img.chan r\n'
-            f'{config.cmd_prefix}img.chan https://imgur.com/43ssfs r',
+            f'{DiscordBot.cmd_prefix}img.chan r\n'
+            f'{DiscordBot.cmd_prefix}img.chan https://imgur.com/43ssfs r',
         help    =
             'Extracts the red (r), green (g), blue (b), or alpha (a) channel from the image'
     )
@@ -158,8 +155,8 @@ class CmdsImage:
         perm    = DiscordCmdBase.ANYONE,
         example =
             '\n'
-            f'{config.cmd_prefix}img.r\n'
-            f'{config.cmd_prefix}img.r https://imgur.com/43ssfs',
+            f'{DiscordBot.cmd_prefix}img.r\n'
+            f'{DiscordBot.cmd_prefix}img.r https://imgur.com/43ssfs',
         help    =
             'Extracts the red channel out of the image'
     )
@@ -172,8 +169,8 @@ class CmdsImage:
         perm    = DiscordCmdBase.ANYONE,
         example =
             '\n'
-            f'{config.cmd_prefix}img.g\n'
-            f'{config.cmd_prefix}img.g https://imgur.com/43ssfs',
+            f'{DiscordBot.cmd_prefix}img.g\n'
+            f'{DiscordBot.cmd_prefix}img.g https://imgur.com/43ssfs',
         help    =
             'Extracts the green channel out of the image'
     )
@@ -186,8 +183,8 @@ class CmdsImage:
         perm    = DiscordCmdBase.ANYONE,
         example =
             '\n'
-            f'{config.cmd_prefix}img.b\n'
-            f'{config.cmd_prefix}img.b https://imgur.com/43ssfs',
+            f'{DiscordBot.cmd_prefix}img.b\n'
+            f'{DiscordBot.cmd_prefix}img.b https://imgur.com/43ssfs',
         help    =
             'Extracts the blue channel out of the image'
     )
@@ -200,8 +197,8 @@ class CmdsImage:
         perm    = DiscordCmdBase.ANYONE,
         example =
             '\n'
-            f'{config.cmd_prefix}img.a\n'
-            f'{config.cmd_prefix}img.a https://imgur.com/43ssfs',
+            f'{DiscordBot.cmd_prefix}img.a\n'
+            f'{DiscordBot.cmd_prefix}img.a https://imgur.com/43ssfs',
         help    =
             'Extracts the alpha channel out of the image'
     )

@@ -4,14 +4,12 @@ import datetime
 import arrow
 import asyncio
 import logging
-import warnings
 
 from typing import Optional
 
 from PIL import Image, ImageColor
 
 import discord
-import config
 
 import tinydb
 from tinydb.table import Document
@@ -25,7 +23,7 @@ class CmdsUtility:
     @staticmethod
     @DiscordCmdBase.DiscordCmd(
         perm    =  DiscordCmdBase.ANYONE,
-        example = f'{config.cmd_prefix}help [command]',
+        example = f'{DiscordBot.cmd_prefix}help [command]',
         help    =
             'Returns the list of command modules or gives you the '
             'description and usage for a selected command.'
@@ -61,8 +59,8 @@ class CmdsUtility:
             )
 
             embed.set_footer(text=
-                f'Use {config.cmd_prefix}commands <module> for list of commands available in that module.\n'
-                f'Use {config.cmd_prefix}help <command> for description about the command usage.\n'
+                f'Use {DiscordBot.cmd_prefix}commands <module> for list of commands available in that module.\n'
+                f'Use {DiscordBot.cmd_prefix}help <command> for description about the command usage.\n'
                 '\n'
                 f'{self.get_version()}'
             )
@@ -92,14 +90,14 @@ class CmdsUtility:
     @staticmethod
     @DiscordCmdBase.DiscordCmd(
         perm    = DiscordCmdBase.ANYONE,
-        example = f'{config.cmd_prefix}commands Games',
+        example = f'{DiscordBot.cmd_prefix}commands Games',
         help    =
             'Shows the commands in a specific module group.'
     )
     async def commands(self: DiscordBot, msg: discord.Message, module: str = None, *args: "list[str]"):
         if isinstance(module, type(None)):
             embed = discord.Embed(color=0x696969, title='🔍 Please Enter a Module Name.')
-            embed.set_footer(text=f'The module groups can be seen with the {config.cmd_prefix}help command.')
+            embed.set_footer(text=f'The module groups can be seen with the {DiscordBot.cmd_prefix}help command.')
             await msg.channel.send(None, embed=embed)
             return
 
@@ -116,7 +114,7 @@ class CmdsUtility:
     @staticmethod
     @DiscordCmdBase.DiscordCmd(
         perm    = DiscordCmdBase.ANYONE,
-        example = f'{config.cmd_prefix}devs A command that gives sickle a cookie :cookie:',
+        example = f'{DiscordBot.cmd_prefix}devs A command that gives sickle a cookie :cookie:',
         help    =
             'Message the devs a suggestion or issues'
     )
@@ -130,7 +128,7 @@ class CmdsUtility:
     @staticmethod
     @DiscordCmdBase.DiscordCmd(
         perm    = DiscordCmdBase.ANYONE,
-        example = f'{config.cmd_prefix}ping',
+        example = f'{DiscordBot.cmd_prefix}ping',
         help    =
             'Just prints "pong!". Useful to know if the bot is up'
     )
@@ -143,12 +141,12 @@ class CmdsUtility:
     @staticmethod
     @DiscordCmdBase.DiscordCmd(
         perm    = DiscordCmdBase.ANYONE,
-        example = f'{config.cmd_prefix}cmd.stats',
+        example = f'{DiscordBot.cmd_prefix}cmd.stats',
         help    =
             'Prints command usage stats for this server'
     )
     async def cmd_stats(self: DiscordBot, msg: discord.Message, *args: "list[str]"):
-        if msg.author.id != config.admin_user_id:
+        if msg.author.id != DiscordBot.get_cfg('Core', 'admin_user_id'):
             status = discord.Embed(title='You must be the bot admin to use this command', color=0x800000)
             await msg.channel.send(None, embed=status)
             return
@@ -176,7 +174,7 @@ class CmdsUtility:
     @staticmethod
     @DiscordCmdBase.DiscordCmd(
         perm    = DiscordCmdBase.ANYONE,
-        example = f'{config.cmd_prefix}color #1ABC9C',
+        example = f'{DiscordBot.cmd_prefix}color #1ABC9C',
         help    =
             'Generates a color from the given HEX code or provided RGB numbers.'
     )
@@ -215,7 +213,7 @@ class CmdsUtility:
     @staticmethod
     @DiscordCmdBase.DiscordCmd(
         perm    = DiscordCmdBase.ANYONE,
-        example = f'{config.cmd_prefix}avatar @person',
+        example = f'{DiscordBot.cmd_prefix}avatar @person',
         help    =
             'Shows the avatar of the user. (in the form of a direct link)'
     )
@@ -230,7 +228,7 @@ class CmdsUtility:
     @staticmethod
     @DiscordCmdBase.DiscordCmd(
         perm    = DiscordCmdBase.ANYONE,
-        example = f'{config.cmd_prefix}uid @person',
+        example = f'{DiscordBot.cmd_prefix}uid @person',
         help    =
             'Shows the User ID of the mentioned user. If no user is mentioned, it will show your ID instead.'
     )
@@ -245,7 +243,7 @@ class CmdsUtility:
     @staticmethod
     @DiscordCmdBase.DiscordCmd(
         perm    = DiscordCmdBase.ANYONE,
-        example = f'{config.cmd_prefix}timestamp 2023-02-12 12:23 UTC+4',
+        example = f'{DiscordBot.cmd_prefix}timestamp 2023-02-12 12:23 UTC+4',
         help    =
             'Generates a discord timestamp from the date given'
     )
@@ -280,7 +278,7 @@ class CmdsUtility:
     @staticmethod
     @DiscordCmdBase.DiscordCmd(
         perm    = DiscordCmdBase.ANYONE,
-        example = f'{config.cmd_prefix}echo Hello world!',
+        example = f'{DiscordBot.cmd_prefix}echo Hello world!',
         help    =
             'Repeats the given text.'
     )
@@ -291,7 +289,7 @@ class CmdsUtility:
     @staticmethod
     @DiscordCmdBase.DiscordCmd(
         perm    = DiscordCmdBase.ANYONE,
-        example = f'{config.cmd_prefix}poll Want to eat?; Yes; No; Hand me the cheese',
+        example = f'{DiscordBot.cmd_prefix}poll Want to eat?; Yes; No; Hand me the cheese',
         help    =
             'Creates a poll with the items from the inputted list. '
             'Separate list items with a semicolon and a space.'
@@ -342,7 +340,7 @@ class CmdsUtility:
     @staticmethod
     @DiscordCmdBase.DiscordCmd(
         perm    = DiscordCmdBase.ANYONE,
-        example = f'{config.cmd_prefix}remind 1:03:15 LEEEEROOOOY JEEEEEENKIIIIINS!',
+        example = f'{DiscordBot.cmd_prefix}remind 1:03:15 LEEEEROOOOY JEEEEEENKIIIIINS!',
         help    =
             'Sets a timer in seconds and displays the message input after it\'s done.'
     )
@@ -418,7 +416,7 @@ class CmdsUtility:
     @staticmethod
     @DiscordCmdBase.DiscordCmd(
         perm    = DiscordCmdBase.ANYONE,
-        example = f'{config.cmd_prefix}reminders 3',
+        example = f'{DiscordBot.cmd_prefix}reminders 3',
         help    =
             'Shows you a list of up to five pending reminders that you made. '
             'Input a number after the command to see more details about that reminder.'
@@ -446,7 +444,7 @@ class CmdsUtility:
             embed = discord.Embed(color=0x0099FF)
             embed.add_field(name=f'ℹ Reminder Data', value=f'You have {num_reminders} pending reminders.', inline=False)
             embed.add_field(name='Upcoming Reminders', value=reminders_str, inline=False)
-            embed.set_footer(text=f'To see their details type {config.cmd_prefix}reminders [0-{num_reminders - 1}]')
+            embed.set_footer(text=f'To see their details type {DiscordBot.cmd_prefix}reminders [0-{num_reminders - 1}]')
             await msg.channel.send(embed=embed)
             return
 
@@ -482,7 +480,7 @@ class CmdsUtility:
     @staticmethod
     @DiscordCmdBase.DiscordCmd(
         perm    = DiscordCmdBase.ANYONE,
-        example = f'{config.cmd_prefix}roll 701',
+        example = f'{DiscordBot.cmd_prefix}roll 701',
         help    =
             'Gives a random number from 0 to 100. You can specify the highest number '
             'the function calls by adding a number after the command. The Number '
@@ -511,7 +509,7 @@ class CmdsUtility:
     @staticmethod
     @DiscordCmdBase.DiscordCmd(
         perm    = DiscordCmdBase.ANYONE,
-        example = f'{config.cmd_prefix}choose Pizza Burgers Both',
+        example = f'{DiscordBot.cmd_prefix}choose Pizza Burgers Both',
         help    =
             'The bot will select a thing from the inputed list. Separate list '
             'items with a space.'
@@ -529,7 +527,7 @@ class CmdsUtility:
     @staticmethod
     @DiscordCmdBase.DiscordCmd(
         perm    = DiscordCmdBase.ANYONE,
-        example = f'{config.cmd_prefix}serverinfo',
+        example = f'{DiscordBot.cmd_prefix}serverinfo',
         help    =
             'Shows information about the server the command was used on.'
     )
@@ -564,7 +562,7 @@ class CmdsUtility:
     @staticmethod
     @DiscordCmdBase.DiscordCmd(
         perm    = DiscordCmdBase.ANYONE,
-        example = f'{config.cmd_prefix}userinfo @person',
+        example = f'{DiscordBot.cmd_prefix}userinfo @person',
         help    =
             'Shows information about the mentioned user. If no user is mentioned, '
             'it will show information about you, instead.'

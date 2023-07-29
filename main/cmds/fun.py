@@ -1,5 +1,4 @@
 import discord
-import config
 import asyncio
 import requests
 import random
@@ -13,7 +12,7 @@ class CmdsFun:
     @staticmethod
     @DiscordCmdBase.DiscordCmd(
         perm    = DiscordCmdBase.ANYONE,
-        example = f'{config.cmd_prefix}boom',
+        example = f'{DiscordBot.cmd_prefix}boom',
         help    =
             'Sets off a bomb'
     )
@@ -26,7 +25,7 @@ class CmdsFun:
     @staticmethod
     @DiscordCmdBase.DiscordCmd(
         perm    = DiscordCmdBase.ANYONE,
-        example = f'{config.cmd_prefix}xkcd 2',
+        example = f'{DiscordBot.cmd_prefix}xkcd 2',
         help    =
             'Outputs the specified xkcd or a random xkcd if number not specified.'
     )

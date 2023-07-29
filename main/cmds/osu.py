@@ -1,10 +1,7 @@
 import discord
-import config
 import aiohttp
 import asyncio
 import warnings
-
-import config
 
 from main import DiscordCmdBase, DiscordBot
 
@@ -26,7 +23,7 @@ class CmdsOsu:
 
     @DiscordCmdBase.DiscordCmd(
         perm    = DiscordCmdBase.ANYONE,
-        example = f'{config.cmd_prefix}forum.bot <cmd>',
+        example = f'{DiscordBot.cmd_prefix}forum.bot <cmd>',
         help    =
             'Access forum bot endpoint'
     )
@@ -134,7 +131,8 @@ class CmdsOsu:
             embed.set_author(name=data['user'], url=user_url, icon_url=avatar_url)
             embed.add_field(name=data['thread_title'], value=new_link)
 
-            ot_feed_channel = 'debug-ot-feed' if 'db' in config.runtime_mode else 'ot-feed'
+            is_dbg = DiscordBot.get_cfg('Core', 'is_dbg')
+            ot_feed_channel = 'debug-ot-feed' if is_dbg else 'ot-feed'
 
             try:
                 # If channel is cached
@@ -214,7 +212,8 @@ class CmdsOsu:
             embed.set_footer(text=data['post_date'])
 
             # Send
-            ot_feed_channel = 'debug-ot-feed' if 'db' in config.runtime_mode else 'ot-feed'
+            is_dbg = DiscordBot.get_cfg('Core', 'is_dbg')
+            ot_feed_channel = 'debug-ot-feed' if is_dbg else 'ot-feed'
 
             try:
                 # If channel is cached

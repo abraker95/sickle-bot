@@ -5,7 +5,6 @@ import importlib
 import inspect
 import warnings
 import time
-import git
 
 import logging
 import asyncio
@@ -13,12 +12,13 @@ import aiohttp
 import threading
 
 import discord
+import git
+import yaml
 
 import tinydb
 from tinydb.table import Document
 from main.db_middleware import DbThreadSafeMiddleware
 
-import config
 from main.utils import Utils
 
 
@@ -31,13 +31,22 @@ class DiscordBot(discord.Client):
 
     __DB_BOT_CFG_INFO_MSG = 0
 
+    with open('config.yaml', 'r') as f:
+        CONFIG = yaml.safe_load(f)
+
+    cmd_prefix = CONFIG['Core']['cmd_prefix']
+
     def __init__(self):
         intents = discord.Intents.default()
         intents.message_content = True
 
         discord.Client.__init__(self, intents=intents)
+
         self.__logger = logging.getLogger(__class__.__name__)
         self.__logger.info('DiscordBot initializing...')
+
+        self.quit     = False
+        self._cfg     = {}
 
         self._cmds    = {}
         self._events  = {}
@@ -54,7 +63,7 @@ class DiscordBot(discord.Client):
         os.makedirs('cache', exist_ok=True)
 
         self.__bot_loop = asyncio.get_event_loop()
-        self.__bot_loop.create_task(self.start(config.discord_token))
+        self.__bot_loop.create_task(self.start(self.get_cfg('Core', 'discord_token')))
 
         self.__bot_thread = threading.Thread(target=self.__bot_loop.run_forever)
         self.__bot_thread.setDaemon(True)
@@ -66,7 +75,7 @@ class DiscordBot(discord.Client):
 
         while True:
             try:
-                await self.login(config.discord_token)
+                await self.login(self.get_cfg('Core', 'discord_token'))
             except aiohttp.ClientConnectionError as e:
                 self.__logger.warn(f'Unable to connect to discord; {e}. Retrying in {retry} seconds...')
 
@@ -93,7 +102,7 @@ class DiscordBot(discord.Client):
 
     async def close(self):
         await discord.Client.close(self)
-        config.runtime_quit = True
+        self.quit = True
 
 
     async def on_message(self, msg: discord.Message):
@@ -138,7 +147,8 @@ class DiscordBot(discord.Client):
         self.loop.create_task(self.__main_loop())
 
         # Load commands
-        bot_dir_files = os.listdir(f'{config.root}/main/cmds')
+        root = os.path.abspath(os.path.dirname(__file__))
+        bot_dir_files = os.listdir(f'{root}/cmds')
         self.__logger.debug(f'Files found: {bot_dir_files}')
 
         module_files = [ f[:-3] for f in bot_dir_files if f != '__init__.py' and f[-3:] == '.py' ]
@@ -209,7 +219,7 @@ class DiscordBot(discord.Client):
         self.__dbg_ch = None
 
         for channel in self.get_all_channels():
-            if channel.id == config.debug_channel:
+            if channel.id == self.get_cfg('Core', 'debug_channel'):
                 self.__dbg_ch = channel
 
             # Auto assign bot channel if not set and enable it in there
@@ -239,6 +249,13 @@ class DiscordBot(discord.Client):
         self.__logger.info(f'Ready!')
         await self.change_presence(activity=discord.Game(':bat:'), status=discord.Status.online)
         await self.__report('Discord loop started')
+
+
+    @staticmethod
+    def get_cfg(src: str, key: str):
+        try: return DiscordBot.CONFIG[src][key]
+        except KeyError as e:
+           raise KeyError(f'Config get failure: {src}.{key}') from e
 
 
     def get_prev_msg(self, channel_id: int) -> Optional[discord.Message]:
@@ -283,11 +300,11 @@ class DiscordBot(discord.Client):
             await self.msg_dev(msg, f'{ref_content}\n')
             return
 
-        if not msg.content.startswith(config.cmd_prefix):
+        if not msg.content.startswith(self.cmd_prefix):
             await msg.channel.send(self.db_get_info_msg())
             return
 
-        cmd = msg.content.lstrip(config.cmd_prefix)
+        cmd = msg.content.lstrip(self.cmd_prefix)
 
         args = cmd.split(' ')
         cmd  = args[0]
@@ -353,13 +370,13 @@ class DiscordBot(discord.Client):
             await self.msg_dev(msg, f'{ref_content}\n')
             return
 
-        if not msg.content.startswith(config.cmd_prefix):
+        if not msg.content.startswith(self.cmd_prefix):
             # Responding to commands only
             return
 
         self.__db_inc_msgs(msg, DiscordBot.__MSG_TYPE_CMDS)
 
-        cmd = msg.content.lstrip(config.cmd_prefix)
+        cmd = msg.content.lstrip(self.cmd_prefix)
 
         args = cmd.split(' ')
         cmd  = args[0]
@@ -369,7 +386,7 @@ class DiscordBot(discord.Client):
             table = self.get_db_table('bot_en')
             if not table.contains(doc_id=msg.channel.id):
                 self.__logger.debug(
-                    f'{msg.guild.name}:#{msg.channel.name} @{msg.author.name} | "{config.cmd_prefix}{cmd} {" ".join(args)}"\n'
+                    f'{msg.guild.name}:#{msg.channel.name} @{msg.author.name} | "{self.cmd_prefix}{cmd} {" ".join(args)}"\n'
                     'Ignoring command because channel does not have `bot_en` and user has no manage channel permission.'
                 )
                 return
@@ -377,7 +394,7 @@ class DiscordBot(discord.Client):
                 data = table.get(doc_id=msg.channel.id)
                 if not data['chan_en']:
                     self.__logger.debug(
-                        f'{msg.guild.name}:#{msg.channel.name} @{msg.author.name} | "{config.cmd_prefix}{cmd} {" ".join(args)}"\n'
+                        f'{msg.guild.name}:#{msg.channel.name} @{msg.author.name} | "{self.cmd_prefix}{cmd} {" ".join(args)}"\n'
                         'Ignoring command because channel does not have `chan_en` and user has no manage channel permission.'
                     )
                     return
@@ -456,10 +473,10 @@ class DiscordBot(discord.Client):
             await self.reply_msg(source_msg, content)
             return
 
-        if not msg.content.startswith(config.cmd_prefix):
+        if not msg.content.startswith(self.get_cfg('Core', 'cmd_prefix')):
             return
 
-        cmd = msg.content.lstrip(config.cmd_prefix)
+        cmd = msg.content.lstrip(self.get_cfg('Core', 'cmd_prefix'))
 
         args = cmd.split(' ')
         cmd  = args[0]
@@ -479,7 +496,7 @@ class DiscordBot(discord.Client):
         while True:
             await asyncio.sleep(1)
 
-            if config.runtime_quit:
+            if self.quit:
                 await self.__report('Exiting discord loop...')
                 await self.close()
                 return
@@ -511,7 +528,7 @@ class DiscordBot(discord.Client):
 
                 await self.__report(
                     f'[ ERROR ]\n'
-                    f'{server_name}:#{channel_name} @{msg.author.name} | "{config.cmd_prefix}{cmd} {" ".join(args)}"\n'
+                    f'{server_name}:#{channel_name} @{msg.author.name} | "{self.cmd_prefix}{cmd} {" ".join(args)}"\n'
                     f'{err}\n'
                 )
 
@@ -530,7 +547,7 @@ class DiscordBot(discord.Client):
 
                 await self.__report(
                     f'[ WARNING ]\n'
-                    f'{server_name}:#{channel_name} @{msg.author.name} | "{config.cmd_prefix}{cmd} {" ".join(args)}"\n'
+                    f'{server_name}:#{channel_name} @{msg.author.name} | "{self.cmd_prefix}{cmd} {" ".join(args)}"\n'
                     f'Warning: {warning.message}\n'
                     f'{err}\n'
                 )

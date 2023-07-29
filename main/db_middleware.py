@@ -1,7 +1,6 @@
 from tinydb.middlewares import Middleware
 import threading
-
-from main.Logger import Logger
+import logging
 
 
 class DbThreadSafeMiddleware(Middleware):
@@ -12,7 +11,7 @@ class DbThreadSafeMiddleware(Middleware):
     def __init__(self, storage_cls):
         Middleware.__init__(self, storage_cls)
 
-        self.__logger = Logger(__class__.__name__)
+        self.__logger = logging.getLogger(__class__.__name__)
         self.__lock   = threading.Lock()
 
 

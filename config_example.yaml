@@ -1,0 +1,20 @@
+Core:
+  # Discord bot token
+  discord_token:  # (str)
+
+  # Discord id of admin
+  admin_user_id:  # (int)
+
+  # Channel ID to post debug messages such as errors and general failures
+  debug_channel:  # (int)
+
+  # Runtime Settings and paths
+  is_dbg:    true     # For warn, info, and debug printouts
+  log_path: 'logs'
+
+  # Feed relay server config
+  feed_server_port:   # (int)
+
+  # Bot Control Settings
+  server_url: 'http://localhost/'
+  cmd_prefix: '<<'

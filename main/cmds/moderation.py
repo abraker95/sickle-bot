@@ -1,5 +1,4 @@
 import discord
-import config
 import warnings
 
 from tinydb.table import Document
@@ -11,7 +10,7 @@ class CmdsModeration:
 
     @DiscordCmdBase.DiscordCmd(
         perm    = DiscordCmdBase.MODERATOR,
-        example = f'{config.cmd_prefix}bot.en true',
+        example = f'{DiscordBot.cmd_prefix}bot.en true',
         help    =
             'Enable/Disable the bot in the channel.'
     )
@@ -54,7 +53,7 @@ class CmdsModeration:
 
     @DiscordCmdBase.DiscordCmd(
         perm    = DiscordCmdBase.MODERATOR,
-        example = f'{config.cmd_prefix}bot.set.ch',
+        example = f'{DiscordBot.cmd_prefix}bot.set.ch',
         help    =
             'Set this channel to be THE bot channel. Or use it in this channel again to undo.'
     )
@@ -99,7 +98,7 @@ class CmdsModeration:
 
     @DiscordCmdBase.DiscordCmd(
         perm    = DiscordCmdBase.ANYONE,
-        example = f'{config.cmd_prefix}bot.get.ch',
+        example = f'{DiscordBot.cmd_prefix}bot.get.ch',
         help    =
             'Displays currently set bot channel (if there is one).'
     )

@@ -6,15 +6,16 @@ if sys.version_info < (3, 8):
 
 import traceback
 import time
-import config
+import os
+
+import pathlib
+import logging
+from main.Logger import LoggerClass
+
+import yaml
+
 
 from main.DiscordBot import DiscordBot
-
-import logging
-from main.Logger import Logger
-
-
-logging.setLoggerClass(Logger)
 
 
 excepthook_old = sys.excepthook
@@ -28,9 +29,20 @@ sys.excepthook = exception_hook
 
 
 if __name__ == '__main__':
+    with open('config.yaml', 'r') as f:
+        config = yaml.safe_load(f)
+
+    root = os.path.abspath(os.getcwd())
+    log_path = config['Core']['log_path'] = pathlib.Path(f'{root}/{config["Core"]["log_path"]}')
+
+    if not os.path.exists(log_path):
+        os.makedirs(log_path)
+
+    logging.setLoggerClass(LoggerClass(log_path, config['Core']['is_dbg']))
+
     discord_bot = DiscordBot()
 
     while not discord_bot.is_closed():
         try: time.sleep(0.2)
         except KeyboardInterrupt:
-            config.runtime_quit = True
+            discord_bot.quit = True

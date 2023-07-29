@@ -1,5 +1,5 @@
 import discord
-import config
+
 import aiohttp
 import asyncio
 import warnings
@@ -15,12 +15,12 @@ class CmdsAdmin:
 
     @DiscordCmdBase.DiscordCmd(
         perm    = DiscordCmdBase.ADMINISTRATOR,
-        example = f'{config.cmd_prefix}kill',
+        example = f'{DiscordBot.cmd_prefix}kill',
         help    =
             'Forcefully kill the bot.'
     )
     async def kill(self: DiscordBot, msg: discord.Message, *args: "list[str]"):
-        if msg.author.id != config.admin_user_id:
+        if msg.author.id != DiscordBot.get_cfg('Core', 'admin_user_id'):
             status = discord.Embed(title=':skull_crossbones: Sigma Shutting Down.', color=0x808080)
             await msg.channel.send(None, embed=status)
 
@@ -40,7 +40,8 @@ class CmdsAdmin:
             data = { 'shutdown' : True }
 
             try:
-                async with session.put(f'http://127.0.0.1:{config.feed_server_port}/internal', timeout=1, json=data) as response:
+                feed_server_port = DiscordBot.get_cfg('Core', 'feed_server_port')
+                async with session.put(f'http://127.0.0.1:{feed_server_port}/internal', timeout=1, json=data) as response:
                     if response.status != 200:
                         warnings.warn('Could not contact feed relay server')
                         return
@@ -56,19 +57,20 @@ class CmdsAdmin:
 
     @DiscordCmdBase.DiscordCmd(
         perm    = DiscordCmdBase.ADMINISTRATOR,
-        example = f'{config.cmd_prefix}feed.ping',
+        example = f'{DiscordBot.cmd_prefix}feed.ping',
         help    =
             'Pings the feed server.'
     )
     async def feed_ping(self: DiscordBot, msg: discord.Message, *args: "list[str]"):
-        if msg.author.id != config.admin_user_id:
+        if msg.author.id != DiscordBot.get_cfg('Core', 'admin_user_id'):
             status = discord.Embed(title='You must be the bot admin to use this command', color=0x800000)
             await msg.channel.send(None, embed=status)
             return
 
         async with aiohttp.ClientSession() as session:
             try:
-                async with session.put(f'http://127.0.0.1:{config.feed_server_port}/ping', timeout=1) as response:
+                feed_server_port = DiscordBot.get_cfg('Core', 'feed_server_port')
+                async with session.put(f'http://127.0.0.1:{feed_server_port}/ping', timeout=1) as response:
                     if response.status != 200:
                         status = discord.Embed(title='Feed server not responding: Not HTTP OK', color=0x800000)
                         await msg.channel.send(None, embed=status)
@@ -85,12 +87,12 @@ class CmdsAdmin:
     @staticmethod
     @DiscordCmdBase.DiscordCmd(
         perm    = DiscordCmdBase.ADMINISTRATOR,
-        example = f'{config.cmd_prefix}eval print("hello world")',
+        example = f'{DiscordBot.cmd_prefix}eval print("hello world")',
         help    =
             'Executes raw python code. This should be used with caution.'
     )
     async def eval(self: DiscordBot, msg: discord.Message, *args: "list[str]"):
-        if msg.author.id != config.admin_user_id:
+        if msg.author.id != DiscordBot.get_cfg('Core', 'admin_user_id'):
             status = discord.Embed(title='You must be the bot admin to use this command', color=0x800000)
             await msg.channel.send(None, embed=status)
             return
@@ -112,7 +114,7 @@ class CmdsAdmin:
     @staticmethod
     @DiscordCmdBase.DiscordCmd(
         perm    = DiscordCmdBase.ADMINISTRATOR,
-        example = f'{config.cmd_prefix}bot.stats',
+        example = f'{DiscordBot.cmd_prefix}bot.stats',
         help    =
             'Prints this bots\'s stats'
     )
@@ -127,7 +129,7 @@ class CmdsAdmin:
                 }
             }
         """
-        if msg.author.id != config.admin_user_id:
+        if msg.author.id != DiscordBot.get_cfg('Core', 'admin_user_id'):
             status = discord.Embed(title='You must be the bot admin to use this command', color=0x800000)
             await msg.channel.send(None, embed=status)
             return
@@ -156,12 +158,12 @@ class CmdsAdmin:
     @staticmethod
     @DiscordCmdBase.DiscordCmd(
         perm    = DiscordCmdBase.ADMINISTRATOR,
-        example = f'{config.cmd_prefix}cmd.stats.all',
+        example = f'{DiscordBot.cmd_prefix}cmd.stats.all',
         help    =
             'Prints command usage stats for all servers'
     )
     async def cmd_stats_all(self: DiscordBot, msg: discord.Message, *args: "list[str]"):
-        if msg.author.id != config.admin_user_id:
+        if msg.author.id != DiscordBot.get_cfg('Core', 'admin_user_id'):
             status = discord.Embed(title='You must be the bot admin to use this command', color=0x800000)
             await msg.channel.send(None, embed=status)
             return
@@ -189,12 +191,12 @@ class CmdsAdmin:
     @staticmethod
     @DiscordCmdBase.DiscordCmd(
         perm    = DiscordCmdBase.ADMINISTRATOR,
-        example = f'{config.cmd_prefix}cmd.set.info',
+        example = f'{DiscordBot.cmd_prefix}cmd.set.info',
         help    =
             'Info message that gets printed when a user responds to the bot in DMs'
     )
     async def cmd_set_info(self: DiscordBot, msg: discord.Message, *args: "list[str]"):
-        if msg.author.id != config.admin_user_id:
+        if msg.author.id != DiscordBot.get_cfg('Core', 'admin_user_id'):
             status = discord.Embed(title='You must be the bot admin to use this command', color=0x800000)
             await msg.channel.send(None, embed=status)
             return
@@ -243,7 +245,7 @@ class CmdsAdmin:
 
                 embed = discord.Embed(title=f'Did you know :grey_question:', color=0x1B6F5F)
                 embed.add_field(
-                    name = f'The `{config.cmd_prefix}{cmd_name}` command',
+                    name = f'The `{DiscordBot.cmd_prefix}{cmd_name}` command',
                     value =
                         f'Example: `{cmd_data["example"]}`\n'
                         '```\n'
