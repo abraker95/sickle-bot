@@ -4,10 +4,6 @@ import aiohttp
 import asyncio
 import warnings
 
-import tinydb
-from tinydb.table import Document
-
-import datetime
 import config
 
 from main import DiscordCmdBase, DiscordBot
@@ -125,84 +121,124 @@ class CmdsOsu:
                 await asyncio.sleep(0.1)
                 await data_reciever.read_data((self,))
 
+
+        @staticmethod
+        async def __handle_data(self: DiscordBot, data: dict):
+            new_link = f'https://osu.ppy.sh/community/forums/posts/{data["post_id"]}'
+
+            avatar_url = data['avatar'] if data['avatar'] != '' else None
+            user_url   = data['user_profile'] if data['user_profile'] != '' else None
+            timestamp  = datetime.datetime.strptime(data['time'].split('+')[0], '%Y-%m-%d %H:%M:%S')
+
+            embed = discord.Embed(color=0x1ABC9C, timestamp=timestamp)
+            embed.set_author(name=data['user'], url=user_url, icon_url=avatar_url)
+            embed.add_field(name=data['thread_title'], value=new_link)
+
+            ot_feed_channel = 'debug-ot-feed' if 'db' in config.runtime_mode else 'ot-feed'
+
+            try:
+                # If channel is cached
+                if not isinstance(CmdsOsu.__ot_feed_ch_cache, type(None)):
+                    await CmdsOsu.__ot_feed_ch_cache.send(embed=embed)
+                    return
+
+                # Otherwise look for it
+                for server in self.guilds:
+                    for channel in server.channels:
+                        if channel.name == ot_feed_channel:
+                            CmdsOsu.__ot_feed_ch_cache = channel
+                            await channel.send(embed=embed)
+                            return
+            except Exception as e:
+                warnings.warn(
+                    f'Unable to send message to #"{ot_feed_channel}";\n'
+                    f'{data}\n'
+                    f'{e}\n'
+                )
+                return
+
+            warnings.warn(f'No #"{ot_feed_channel}" channel found!')
+
+
     if not __OLD_FEED_SERVER__:
+
         @DiscordCmdBase.DiscordEvent()
         async def forum_bot_feed(self: DiscordBot):
             await FeedServer.init(lambda data: CmdsOsu.__handle_data(self, data))
 
 
-    @staticmethod
-    async def __handle_data(self: DiscordBot, data: dict):
-        required_keys = set((
-                'subforum_id',
-                'subforum_name',
-                'post_date',
-                'prev_post_date',
-                'thread_title',
-                'post_id',
-                'first_post_id',
-                'username',
-                'user_id',
-                'avatar_url',
-                'contents',
-        ))
-        if not required_keys.issubset(data):
-            warnings.warn(f'Comment data is incomplete!\nData: {data.keys()}\nRequired: {required_keys}')
-            return
-
-        # Embed character limit
-        contents = data['contents'][:5700]
-
-        # Field character limit
-        chunks = [ contents[i : i + 1023] for i in range(0, len(contents), 1023) ]
-
-        # Get post & user urls
-        post_url = f'https://osu.ppy.sh/community/forums/posts/{data["post_id"]}'
-        user_url = f'https://osu.ppy.sh/users/{data["user_id"]}'
-
-        # Patch up default avatar link
-        if 'avatar-guest' in data['avatar_url']:
-            data['avatar_url'] = f'https://osu.ppy.sh/{data["avatar_url"]}'
-
-        # Set color
-        color = 0x1abc9c  # Greenish
-        if data['post_id'] == data['first_post_id']:
-            color = 0xeeeeee  # First post of thread is white
-
-        # Construct embed
-        embed = discord.Embed(color=color, title=f'Subforum: {data["subforum_name"]}', description=f'[{data["thread_title"]}]({post_url})\n')
-        embed.set_author(name=data['username'], url=user_url)
-        embed.set_thumbnail(url=data['avatar_url'])
-        for chunk in chunks:
-            embed.add_field(name=f'\u200b', value=chunk, inline=True)
-        embed.set_footer(text=data['post_date'])
-
-        # Send
-        ot_feed_channel = 'debug-ot-feed' if 'db' in config.runtime_mode else 'ot-feed'
-
-        try:
-            # If channel is cached
-            if not isinstance(CmdsOsu.__ot_feed_ch_cache, type(None)):
-                await CmdsOsu.__ot_feed_ch_cache.send(embed=embed)
+        @staticmethod
+        async def __handle_data(self: DiscordBot, data: dict):
+            required_keys = set((
+                    'subforum_id',
+                    'subforum_name',
+                    'post_date',
+                    'prev_post_date',
+                    'thread_title',
+                    'post_id',
+                    'first_post_id',
+                    'username',
+                    'user_id',
+                    'avatar_url',
+                    'contents',
+            ))
+            if not required_keys.issubset(data):
+                warnings.warn(f'Comment data is incomplete!\nData: {data.keys()}\nRequired: {required_keys}')
                 return
 
-            # Otherwise look for it
-            for server in self.guilds:
-                for channel in server.channels:
-                    if channel.name == ot_feed_channel:
-                        CmdsOsu.__ot_feed_ch_cache = channel
-                        await channel.send(embed=embed)
-                        return
-        except discord.errors.Forbidden as e:
-            await warnings.warn(f'Error posting forum post to channel {channel.name}: {e}')
-        except discord.errors.HTTPException as e:
-            warnings.warn(f'Error posting forum post: {e} | Contents:\n{contents}')
-        except Exception as e:
-            warnings.warn(
-                f'Unable to send message to #"{ot_feed_channel}";\n'
-                f'{data}\n'
-                f'{e}\n'
-            )
-            return
+            # Embed character limit
+            contents = data['contents'][:5700]
 
-        warnings.warn(f'No #"{ot_feed_channel}" channel found!')
+            # Field character limit
+            chunks = [ contents[i : i + 1023] for i in range(0, len(contents), 1023) ]
+
+            # Get post & user urls
+            post_url = f'https://osu.ppy.sh/community/forums/posts/{data["post_id"]}'
+            user_url = f'https://osu.ppy.sh/users/{data["user_id"]}'
+
+            # Patch up default avatar link
+            if 'avatar-guest' in data['avatar_url']:
+                data['avatar_url'] = f'https://osu.ppy.sh/{data["avatar_url"]}'
+
+            # Set color
+            color = 0x1abc9c  # Greenish
+            if data['post_id'] == data['first_post_id']:
+                color = 0xeeeeee  # First post of thread is white
+
+            # Construct embed
+            embed = discord.Embed(color=color, title=f'Subforum: {data["subforum_name"]}', description=f'[{data["thread_title"]}]({post_url})\n')
+            embed.set_author(name=data['username'], url=user_url)
+            embed.set_thumbnail(url=data['avatar_url'])
+            for chunk in chunks:
+                embed.add_field(name=f'\u200b', value=chunk, inline=True)
+            embed.set_footer(text=data['post_date'])
+
+            # Send
+            ot_feed_channel = 'debug-ot-feed' if 'db' in config.runtime_mode else 'ot-feed'
+
+            try:
+                # If channel is cached
+                if not isinstance(CmdsOsu.__ot_feed_ch_cache, type(None)):
+                    await CmdsOsu.__ot_feed_ch_cache.send(embed=embed)
+                    return
+
+                # Otherwise look for it
+                for server in self.guilds:
+                    for channel in server.channels:
+                        if channel.name == ot_feed_channel:
+                            CmdsOsu.__ot_feed_ch_cache = channel
+                            await channel.send(embed=embed)
+                            return
+            except discord.errors.Forbidden as e:
+                await warnings.warn(f'Error posting forum post to channel {channel.name}: {e}')
+            except discord.errors.HTTPException as e:
+                warnings.warn(f'Error posting forum post: {e} | Contents:\n{contents}')
+            except Exception as e:
+                warnings.warn(
+                    f'Unable to send message to #"{ot_feed_channel}";\n'
+                    f'{data}\n'
+                    f'{e}\n'
+                )
+                return
+
+            warnings.warn(f'No #"{ot_feed_channel}" channel found!')
