@@ -533,6 +533,8 @@ class DiscordBot(discord.Client):
     async def __exec_cmd(self, cmd: str, msg: discord.Message, args: list):
         with warnings.catch_warnings(record=True) as w:
             try: await self._cmds[cmd]['func'](self, msg, *args)
+            except discord.Forbidden:
+                return
             except Exception as e:
                 try:
                     embed = discord.Embed(type='rich', color=0xFF9900, title='⚠ Error')
