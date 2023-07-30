@@ -45,6 +45,9 @@ class DiscordBot(discord.Client):
         self.__logger = logging.getLogger(__class__.__name__)
         self.__logger.info('DiscordBot initializing...')
 
+        self.is_debug = self.get_cfg('Core', 'is_debug')
+        self.__logger.info(f'is_debug: {self.is_debug}')
+
         self.quit     = False
         self._cfg     = {}
 

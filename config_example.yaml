@@ -9,7 +9,7 @@ Core:
   debug_channel:  # (int)
 
   # Runtime Settings and paths
-  is_dbg:    true     # For warn, info, and debug printouts
+  is_debug: true     # For warn, info, and debug printouts
   log_path: 'logs'
 
   # Feed relay server config

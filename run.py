@@ -38,7 +38,7 @@ if __name__ == '__main__':
     if not os.path.exists(log_path):
         os.makedirs(log_path)
 
-    logging.setLoggerClass(LoggerClass(log_path, config['Core']['is_dbg']))
+    logging.setLoggerClass(LoggerClass(log_path, config['Core']['is_debug']))
 
     discord_bot = DiscordBot()
 
