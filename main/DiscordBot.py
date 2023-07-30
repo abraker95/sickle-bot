@@ -386,38 +386,16 @@ class DiscordBot(discord.Client):
         cmd  = args[0]
         args = args[1:]
 
-        if not msg.author.guild_permissions.manage_channels:
-            if not self._cmds['anywhere']:
-                table = self.get_db_table('bot_en')
-                if not table.contains(doc_id=msg.channel.id):
-                    self.__logger.debug(
-                        f'{msg.guild.name}:#{msg.channel.name} @{msg.author.name} | "{self.cmd_prefix}{cmd} {" ".join(args)}"\n'
-                        'Ignoring command because channel does not have `bot_en` and user has no manage channel permission.'
-                    )
-                    return
-                else:
-                    data = table.get(doc_id=msg.channel.id)
-                    if not data['chan_en']:
-                        self.__logger.debug(
-                            f'{msg.guild.name}:#{msg.channel.name} @{msg.author.name} | "{self.cmd_prefix}{cmd} {" ".join(args)}"\n'
-                            'Ignoring command because channel does not have `chan_en` and user has no manage channel permission.'
-                        )
-                        return
-
         # Built-in command
         if cmd in self._cmds:
             self.__bot_loop.create_task(self.__exec_cmd(cmd, msg, args))
             self.__logger.debug(f'{cmd}:@{msg.author.name} -> {msg.guild.name}:#{msg.channel.name}')
-
-            self.__db_inc_cmd_count(msg.guild.id, cmd)
             return
 
         # Server specific custom command
         if f'{msg.guild.id}_{cmd}' in self._cmds:
             self.__bot_loop.create_task(self.__exec_cmd(f'{msg.guild.id}_{cmd}', msg, args))
             self.__logger.debug(f'{cmd}:@{msg.author.name} -> {msg.guild.name}:#{msg.channel.name}')
-
-            self.__db_inc_cmd_count(msg.guild.id, cmd)
             return
 
         self.__logger.debug(f'"{cmd}" invalid cmd')
@@ -500,16 +478,12 @@ class DiscordBot(discord.Client):
         if cmd in self._cmds:
             self.__bot_loop.create_task(self.__exec_cmd(cmd, msg, args))
             self.__logger.debug(f'{cmd}:@{msg.author.name} -> DM')
-
-            self.__db_inc_cmd_count(msg.guild.id, cmd)
             return
 
         # Server specific custom command
         if f'{msg.guild.id}_{cmd}' in self._cmds:
             self.__bot_loop.create_task(self.__exec_cmd(f'{msg.guild.id}_{cmd}', msg, args))
             self.__logger.debug(f'{cmd}:@{msg.author.name} -> DM')
-
-            self.__db_inc_cmd_count(msg.guild.id, cmd)
             return
 
         self.__logger.debug(f'"{cmd}" invalid cmd')
@@ -532,6 +506,26 @@ class DiscordBot(discord.Client):
 
     async def __exec_cmd(self, cmd: str, msg: discord.Message, args: list):
         with warnings.catch_warnings(record=True) as w:
+            if not msg.author.guild_permissions.manage_channels:
+                if not self._cmds[cmd]['anywhere']:
+                    table = self.get_db_table('bot_en')
+                    if not table.contains(doc_id=msg.channel.id):
+                        self.__logger.debug(
+                            f'{msg.guild.name}:#{msg.channel.name} @{msg.author.name} | "{self.cmd_prefix}{cmd} {" ".join(args)}"\n'
+                            'Ignoring command because channel does not have `bot_en` and user has no manage channel permission.'
+                        )
+                        return
+                    else:
+                        data = table.get(doc_id=msg.channel.id)
+                        if not data['chan_en']:
+                            self.__logger.debug(
+                                f'{msg.guild.name}:#{msg.channel.name} @{msg.author.name} | "{self.cmd_prefix}{cmd} {" ".join(args)}"\n'
+                                'Ignoring command because channel does not have `chan_en` and user has no manage channel permission.'
+                            )
+                            return
+
+            self.__db_inc_cmd_count(msg.guild.id, cmd)
+
             try: await self._cmds[cmd]['func'](self, msg, *args)
             except discord.Forbidden:
                 return
