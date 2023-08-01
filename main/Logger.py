@@ -7,7 +7,7 @@ import functools
 
 class Logger(logging.Logger):
 
-    def __init__(self, log_path: str, is_dbg: str, name: str, level: int = logging.NOTSET):
+    def __init__(self, log_path: str, is_debug: str, name: str, level: int = logging.NOTSET):
         logging.Logger.__init__(self, name, level=logging.DEBUG)
 
         self.callback = None
@@ -17,8 +17,8 @@ class Logger(logging.Logger):
         self.sh = logging.StreamHandler()
         self.sh.setFormatter(formatter)
 
-        if is_dbg: self.sh.setLevel(logging.DEBUG)
-        else:      self.sh.setLevel(logging.INFO)
+        if is_debug: self.sh.setLevel(logging.DEBUG)
+        else:        self.sh.setLevel(logging.INFO)
 
         self.addHandler(self.sh)
 
@@ -63,9 +63,9 @@ class Logger(logging.Logger):
         self.critical(msg)
 
 
-def LoggerClass(log_path, is_dbg):
+def LoggerClass(log_path, is_debug):
 
     class LoggerClassFull(Logger):
-        __init__ = functools.partialmethod(Logger.__init__, log_path, is_dbg)
+        __init__ = functools.partialmethod(Logger.__init__, log_path, is_debug)
 
     return LoggerClassFull

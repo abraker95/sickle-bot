@@ -131,8 +131,8 @@ class CmdsOsu:
             embed.set_author(name=data['user'], url=user_url, icon_url=avatar_url)
             embed.add_field(name=data['thread_title'], value=new_link)
 
-            is_dbg = DiscordBot.get_cfg('Core', 'is_dbg')
-            ot_feed_channel = 'debug-ot-feed' if is_dbg else 'ot-feed'
+            is_debug = DiscordBot.get_cfg('Core', 'is_debug')
+            ot_feed_channel = 'debug-ot-feed' if is_debug else 'ot-feed'
 
             try:
                 # If channel is cached
@@ -212,8 +212,8 @@ class CmdsOsu:
             embed.set_footer(text=data['post_date'])
 
             # Send
-            is_dbg = DiscordBot.get_cfg('Core', 'is_dbg')
-            ot_feed_channel = 'debug-ot-feed' if is_dbg else 'ot-feed'
+            is_debug = DiscordBot.get_cfg('Core', 'is_debug')
+            ot_feed_channel = 'debug-ot-feed' if is_debug else 'ot-feed'
 
             try:
                 # If channel is cached
