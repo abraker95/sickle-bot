@@ -101,14 +101,24 @@ class CmdsAdmin:
             await self.run_help_cmd(msg, 'eval')
             return
 
-        output = eval(' '.join(args))
+        code = ' '.join(args)
+        code = code.replace('```', '')
+
+        output = eval(code)
         if inspect.isawaitable(output):
             output = await output
 
-        status = discord.Embed(title='✅ Executed', color=0x66CC66)
-        if output:
-            status.add_field(name='Results', value=f'\n```\n{output}\n```')
-        await msg.channel.send(None, embed=status)
+        output = str(output)
+
+        if not output:
+            status = discord.Embed(title='✅ Executed', color=0x66CC66)
+            await msg.channel.send(None, embed=status)
+            return
+
+        for i in range(0, len(output), 1000):
+            status = discord.Embed(color=0x66CC66)
+            status.add_field(name='Results', value=f'\n```\n{output[i : i + 1000]}\n```')
+            await msg.channel.send(None, embed=status)
 
 
     @staticmethod
@@ -207,6 +217,25 @@ class CmdsAdmin:
         await msg.channel.send(None, embed=status)
 
 
+    @staticmethod
+    @DiscordCmdBase.DiscordCmd(
+        perm    = DiscordCmdBase.ADMINISTRATOR,
+        example = f'{DiscordBot.cmd_prefix}bot.set.dbg',
+        help    =
+            'Toggles debug logs into dev channel'
+    )
+    async def bot_set_dbg(self: DiscordBot, msg: discord.Message, *args: "list[str]"):
+        if msg.author.id != DiscordBot.get_cfg('Core', 'admin_user_id'):
+            status = discord.Embed(title='You must be the bot admin to use this command', color=0x800000)
+            await msg.channel.send(None, embed=status)
+            return
+
+        self.is_debug = not self.is_debug
+
+        status = discord.Embed(title=f'✅ Debug {"enabled" if self.is_debug else "disabled"}', color=0x66CC66)
+        await msg.channel.send(None, embed=status)
+
+
     @DiscordCmdBase.DiscordEvent(en = False)
     async def user_engagement_task(self: DiscordBot):
         """
@@ -255,3 +284,11 @@ class CmdsAdmin:
 
                 await channel.send(None, embed=embed)
 
+            # TODO: Once a day at a random time, where enabled, if nobody used the bot in the last 72h,
+            # pick a common user command and post a "did you know you can use this" type of post
+            #
+            # Maybe have a probalistic determined point of posting:
+            #   - Odds of posting at any given hour
+            #   - Odds of posting soon after someone used the bot approach 0%
+            #   - Odds increase starting the following day and level off at 1/N
+            #   - If nobody uses the bot, expect to post once every 3-7 days
