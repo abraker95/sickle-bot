@@ -269,7 +269,7 @@ class CmdsModeration:
             for cmd_txt, cmd_msg in entry.items():
                 logger.info(f'    {cmd_txt}')
                 self._cmds[f'{entry.doc_id}_{cmd_txt}'] = {
-                    'func'     : lambda bot, msg: CmdsModeration.__custom_command(bot, msg, cmd_server_id=entry.doc_id, cmd_txt=cmd_msg),
+                    'func'     : lambda bot, msg, cmd_server_id=entry.doc_id, cmd_text=cmd_msg: CmdsModeration.__custom_command(bot, msg, cmd_server_id=cmd_server_id, cmd_txt=cmd_text),
                     'perm'     : DiscordCmdBase.ANYONE,
                     'anywhere' : True,
                     'example'  : None,
