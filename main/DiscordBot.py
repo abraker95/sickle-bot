@@ -31,6 +31,12 @@ class DiscordBot(discord.Client):
 
     __DB_BOT_CFG_INFO_MSG = 0
 
+    __TABLE_CMD_STATS = 'cmd_stats'
+    __TABLE_BOT_STATS = 'bot_stats'
+    __TABLE_BOT_CFG   = 'bot_cfg'
+    __TABLE_BOT_EN    = 'bot_en'
+    __TABLE_BOT_CH    = 'bot_ch'
+
     with open('config.yaml', 'r') as f:
         CONFIG = yaml.safe_load(f)
 
@@ -228,12 +234,12 @@ class DiscordBot(discord.Client):
 
             # Auto assign bot channel if not set and enable it in there
             if 'bot' in channel.name:
-                table = self.get_db_table('bot_ch')
+                table = self.__db.table(self.__TABLE_BOT_CH)
                 if not table.contains(doc_id=channel.guild.id):
                     self.__logger.info(f'Setting bot channel for {channel.guild.name}#{channel.name} | {channel.guild.id}.{channel.id}')
                     table.insert(Document({ 'channel' : channel.id }, channel.guild.id))
 
-                table = self.get_db_table('bot_en')
+                table = self.__db.table(self.__TABLE_BOT_EN)
                 if not table.contains(doc_id=channel.id):
                     table.insert(Document({ 'chan_en' : True }, channel.id))
 
@@ -266,10 +272,6 @@ class DiscordBot(discord.Client):
         try: return self.__prev_msg[channel_id]
         except KeyError:
             return None
-
-
-    def get_db_table(self, table: str) -> tinydb.TinyDB.table_class:
-        return self.__db.table(table)
 
 
     async def run_help_cmd(self: "DiscordBot", msg: discord.Message, cmd: str):
@@ -508,7 +510,7 @@ class DiscordBot(discord.Client):
         with warnings.catch_warnings(record=True) as w:
             if not msg.author.guild_permissions.manage_channels:
                 if not self._cmds[cmd]['anywhere']:
-                    table = self.get_db_table('bot_en')
+                    table = self.__db.table(self.__TABLE_BOT_EN)
                     if not table.contains(doc_id=msg.channel.id):
                         self.__logger.debug(
                             f'{msg.guild.name}:#{msg.channel.name} @{msg.author.name} | "{self.cmd_prefix}{cmd} {" ".join(args)}"\n'
@@ -653,10 +655,10 @@ class DiscordBot(discord.Client):
         """
         Data fmt:
             "bot_stats" : {
-                (msg.guild.id: str) : {
-                    "total_msgs" : (int),
-                    "user_msgs"  : (int),
-                    "total_cmds" : (int),
+                [msg.guild.id: int] : {
+                    "total_msgs" : int,
+                    "user_msgs"  : int,
+                    "total_cmds" : int,
                 }
             }
         """
@@ -664,7 +666,7 @@ class DiscordBot(discord.Client):
             # Probably private DM
             return
 
-        table = self.get_db_table('bot_stats')
+        table = self.__db.table(self.__TABLE_BOT_STATS)
         entry = table.get(doc_id=msg.guild.id)
 
         if isinstance(entry, type(None)):
@@ -687,12 +689,12 @@ class DiscordBot(discord.Client):
         """
         Data fmt:
             "cmd_stats": {
-                (doc_id: int) : { 'cmd' : (cmd: str), 'server' : (server_id: int), 'count' : (count: int) },
-                (doc_id: int) : { 'cmd' : (cmd: str), 'server' : (server_id: int), 'count' : (count: int) },
+                [doc_id: int] : { 'cmd' : (cmd: str), 'server' : (server_id: int), 'count' : (count: int) },
+                [doc_id: int] : { 'cmd' : (cmd: str), 'server' : (server_id: int), 'count' : (count: int) },
                 ...
             }
         """
-        table = self.get_db_table('cmd_stats')
+        table = self.__db.table(self.__TABLE_CMD_STATS)
         entry = table.get(tinydb.Query().fragment({'cmd' : cmd, 'server' : server_id}))
 
         if not entry:
@@ -705,12 +707,12 @@ class DiscordBot(discord.Client):
         """
         Data fmt:
             "cmd_stats": {
-                (doc_id: int) : { 'cmd' : (cmd: str), 'server' : (server_id: int), 'count' : (count: int) },
-                (doc_id: int) : { 'cmd' : (cmd: str), 'server' : (server_id: int), 'count' : (count: int) },
+                [doc_id: int] : { 'cmd' : (cmd: str), 'server' : (server_id: int), 'count' : (count: int) },
+                [doc_id: int] : { 'cmd' : (cmd: str), 'server' : (server_id: int), 'count' : (count: int) },
                 ...
             }
         """
-        table = self.get_db_table('cmd_stats')
+        table = self.__db.table(self.__TABLE_CMD_STATS)
         entry = table.get(tinydb.Query().fragment({'cmd' : cmd, 'server' : server_id}))
         return 0 if not entry else entry['count']
 
@@ -719,12 +721,12 @@ class DiscordBot(discord.Client):
         """
         Data fmt:
             "cmd_stats": {
-                (doc_id: int) : { 'cmd' : (cmd: str), 'server' : (server_id: int), 'count' : (count: int) },
-                (doc_id: int) : { 'cmd' : (cmd: str), 'server' : (server_id: int), 'count' : (count: int) },
+                [doc_id: int] : { 'cmd' : (cmd: str), 'server' : (server_id: int), 'count' : (count: int) },
+                [doc_id: int] : { 'cmd' : (cmd: str), 'server' : (server_id: int), 'count' : (count: int) },
                 ...
             }
         """
-        table = self.get_db_table('cmd_stats')
+        table = self.__db.table(self.__TABLE_CMD_STATS)
         entries = table.search(tinydb.Query().fragment({'cmd' : cmd}))
         return sum([ entry['count'] for entry in entries ])
 
@@ -733,12 +735,12 @@ class DiscordBot(discord.Client):
         """
         Data fmt:
             "bot_cfg": {
-                (doc_id: 0) : {
+                [doc_id: 0] : {
                     'info' : (msg: str)
                 }
             }
         """
-        table = self.get_db_table('bot_cfg')
+        table = self.__db.table(self.__TABLE_BOT_CFG)
         entry = table.get(doc_id=DiscordBot.__DB_BOT_CFG_INFO_MSG)
 
         if not entry:
@@ -751,12 +753,12 @@ class DiscordBot(discord.Client):
         """
         Data fmt:
             "bot_cfg": {
-                (doc_id: 0) : {
+                [doc_id: 0] : {
                     'info' : (msg: str)
                 }
             }
         """
-        table = self.get_db_table('bot_cfg')
+        table = self.__db.table(self.__TABLE_BOT_CFG)
         entry = table.get(doc_id=DiscordBot.__DB_BOT_CFG_INFO_MSG)
 
         if not entry:
