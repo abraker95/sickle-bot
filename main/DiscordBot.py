@@ -345,7 +345,7 @@ class DiscordBot(discord.Client):
                     '-------------------------------'
                     f'User:    {msg.author} ({msg.author.id})\n'
                     f'Server:  {msg.guild.name} ({msg.guild.id}) -> ({msg.reference.guild_id})\n'
-                    f'Channel: {msg.channel.name} ({msg.channel.id}) -> ({msg.channel.category_id})\n'
+                    f'Channel: {msg.channel.name} ({msg.channel.id}) -> ({msg.reference.channel_id})\n'
                     f'Message: {msg.id} -> {msg.reference.message_id}n\n'
                     f'Url:     {msg.jump_url} -> {msg.reference.jump_url}'
                 )

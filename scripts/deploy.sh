@@ -9,14 +9,14 @@ fi
 
 systemctl stop sickle.service
 
-mv /home/server/prod/sickle-bot/config.py /home/server/tmp/config.py
+mv /home/server/prod/sickle-bot/config.yaml /home/server/tmp/config.yaml
 mv /home/server/prod/sickle-bot/db.json /home/server/tmp/db.json
 
 rm -rf /home/server/prod/sickle-bot
-rsync -a --progress . /home/server/prod/sickle-bot --exclude config.py --exclude db.json
+rsync -a --progress . /home/server/prod/sickle-bot --exclude config.yaml --exclude db.json
 chown -R server:server /home/server/prod/sickle-bot
 
-mv /home/server/tmp/config.py /home/server/prod/sickle-bot/config.py
+mv /home/server/tmp/config.yaml /home/server/prod/sickle-bot/config.yaml
 mv /home/server/tmp/db.json /home/server/prod/sickle-bot/db.json
 
 # Sensitive files should only be accesible by the user these files are for

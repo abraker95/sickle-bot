@@ -1,8 +1,9 @@
+from collections.abc import Callable, Sequence
+
 import os
 import platform
 import asyncio
 import socket
-from typing import List, Optional, Sequence
 import warnings
 
 import uvicorn
@@ -26,7 +27,7 @@ class UvicornServerPatch(uvicorn.Server):
 
     __logger = logging.getLogger('UvicornServerPatch')
 
-    async def startup(self: uvicorn.Server, sockets: Optional[List[socket.socket]] = None) -> None:
+    async def startup(self: uvicorn.Server, sockets: list[socket.socket] | type[None] = None) -> None:
         await self.lifespan.startup()
         if self.lifespan.should_exit:
             self.should_exit = True
@@ -35,7 +36,7 @@ class UvicornServerPatch(uvicorn.Server):
         config = self.config
 
         def create_protocol(
-            _loop: Optional[asyncio.AbstractEventLoop] = None,
+            _loop: asyncio.AbstractEventLoop | type[None] = None,
         ) -> asyncio.Protocol:
             return config.http_protocol_class(  # type: ignore[call-arg]
                 config=config,
@@ -131,7 +132,15 @@ class FeedServer():
     app = fastapi.FastAPI()
 
     @staticmethod
-    async def init(callback):
+    async def init(callback: Callable):
+        """
+        Intializes the Sickle bot API server
+
+        Params
+        ======
+        callback: Callable
+            Callback to function that would process the discord bot request
+        """
         FeedServer.callback = callback
         FeedServer.logger = logging.getLogger('FeedServer')
 
@@ -141,6 +150,7 @@ class FeedServer():
         await FeedServer.http_server.serve()
 
 
+    # [2024.09.07] TODO: Rename to /admin/ping
     @staticmethod
     @app.put('/ping')  # type: ignore
     async def ping():
@@ -148,6 +158,7 @@ class FeedServer():
         return { 'status' : 'ok' }
 
 
+    # [2024.09.07] TODO: Rename to /admin/shutdown
     @staticmethod
     @app.put('/internal')  # type: ignore
     async def shutdown(data: fastapi.Request):
@@ -171,6 +182,7 @@ class FeedServer():
         return { 'status' : 'err' }
 
 
+    # [2024.09.07] TODO: Rename to /osu/post
     @staticmethod
     @app.post('/post')  # type: ignore
     async def handle_post(data: fastapi.Request):
@@ -195,3 +207,7 @@ class FeedServer():
             return { 'status' : 'err' }
 
         return { 'status' : 'ok' }
+
+
+    # [2024.09.07] TODO: Add /admin/post endpoint
+    #   This will send post a message to the bot-test channel (or whatever it's configured to)

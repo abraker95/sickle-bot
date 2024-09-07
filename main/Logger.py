@@ -38,6 +38,10 @@ class Logger(logging.Logger):
         self.fh.close(); self.removeHandler(self.fh)
 
 
+    def set_report_callback(self, callback: Callable):
+        self.callback = callback
+
+
     # \FIXME: https://osu.ppy.sh/forum/t/772528 <- this thread's title has characters which break logger encoding; Error report: https://i.imgur.com/pFmcQvB.png
     '''
     def error(self, msg):
