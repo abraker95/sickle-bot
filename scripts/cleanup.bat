@@ -1,3 +1,6 @@
+@echo off
+
+
 echo "Removing all __pycache__"
 for /d /r . %%d in (__pycache__) do @if exist "%%d" rd /s/q "%%d"
 
@@ -9,3 +12,5 @@ rd /s/q cache
 
 echo Removing "venv/..."
 rd /s/q venv
+
+echo [ DONE ]
