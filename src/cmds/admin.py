@@ -40,8 +40,8 @@ class CmdsAdmin:
             data = { 'shutdown' : True }
 
             try:
-                feed_server_port = DiscordBot.get_cfg('Core', 'feed_server_port')
-                async with session.put(f'http://127.0.0.1:{feed_server_port}/internal', timeout=1, json=data) as response:
+                api_port = DiscordBot.get_cfg('Core', 'api_port')
+                async with session.put(f'http://127.0.0.1:{api_port}/internal', timeout=1, json=data) as response:
                     if response.status != 200:
                         warnings.warn('Could not contact feed relay server')
                         return

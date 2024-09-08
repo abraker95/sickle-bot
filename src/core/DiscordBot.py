@@ -234,7 +234,6 @@ class DiscordBot(discord.Client):
             self.__dbg_ch = None
 
             for channel in self.get_all_channels():
-                self.__logger.info(f'    Channel: {channel.guild.name}:#{channel.name}')
                 if channel.id == self.get_cfg('Core', 'debug_channel_id'):
                     self.__dbg_ch = channel
 
@@ -545,7 +544,9 @@ class DiscordBot(discord.Client):
 
             self.__db_inc_cmd_count(msg.guild.id, cmd)
 
-            try: await self._cmds[cmd]['func'](self, msg, *args)
+            try:
+                self.__logger.debug(f'cmd: {cmd}    msg: {msg}')
+                await self._cmds[cmd]['func'](self, msg, *args)
             except discord.Forbidden:
                 return
             except Exception as e:

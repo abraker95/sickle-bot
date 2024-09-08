@@ -17,10 +17,10 @@ class CmdsBots:
         help    =
             'Access forum bot endpoint'
     )
-    async def forum_bot(self: DiscordBot, msg: discord.Message, *args: "list[str]"):
+    async def bot_forum(self: DiscordBot, msg: discord.Message, *args: "list[str]"):
         # Parse args
         if len(args) < 1:
-            await self.run_help_cmd(msg, 'forum.bot')
+            await self.run_help_cmd(msg, 'bot.forum')
             return
 
         try:    bot, name = args[0].split('.')
@@ -38,10 +38,11 @@ class CmdsBots:
 
         # Send request to OT Feed Server
         reply = None
+        bot_forum_monitor_port = DiscordBot.get_cfg('Core', 'bot_forum_monitor_port')
 
         async with aiohttp.ClientSession() as session:
             try:
-                async with session.post(f'http://127.0.0.1:{44444}/api', timeout=1, json=data) as response:
+                async with session.put(f'http://127.0.0.1:{bot_forum_monitor_port}/request', timeout=1, json=data) as response:
                     if response.status != 200:
                         await msg.channel.send('Failed')
                         return
