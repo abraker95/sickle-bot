@@ -1,7 +1,7 @@
 import discord
 import warnings
 
-from main import DiscordBot
+from core import DiscordBot
 
 
 class CmdsAdmin:
@@ -12,7 +12,7 @@ class CmdsAdmin:
         Processes the '/admin/post' BotApi endpoint
         """
         required_keys = set((
-            'contents'
+            'contents',
             'src'
         ))
         if not required_keys.issubset(data):

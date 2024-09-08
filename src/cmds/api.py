@@ -1,20 +1,20 @@
 import warnings
 
-from main import DiscordCmdBase, DiscordBot
-from main.FeedServer import FeedServer
+from core import DiscordCmdBase, DiscordBot
+from core import FeedServer
 
-from api.osu import CmdsOsu
-from api.admin import CmdsAdmin
+from .api_modules.osu import CmdsOsu
+from .api_modules.admin import CmdsAdmin
 
 
-class BotApi:
+class CmdsApi:
     """
     Command access for this bot: [external] -> DiscordBot
     """
 
     @DiscordCmdBase.DiscordEvent()
     async def api_server(self: DiscordBot):
-        await FeedServer.init(lambda route, data: BotApi.__handle_data(self, route, data))
+        await FeedServer.init(lambda route, data: CmdsApi.__handle_data(self, route, data))
 
 
     @staticmethod

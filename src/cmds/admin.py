@@ -8,7 +8,7 @@ import time
 import random
 import inspect
 
-from main import DiscordCmdBase, DiscordBot
+from core import DiscordCmdBase, DiscordBot
 
 
 class CmdsAdmin:
@@ -144,7 +144,7 @@ class CmdsAdmin:
             await msg.channel.send(None, embed=status)
             return
 
-        table = self.get_db_table('bot_stats')
+        table = self.db.table('bot_stats')
         entry = table.get(doc_id=msg.guild.id)
 
         if isinstance(entry, type(None)):
@@ -253,7 +253,7 @@ class CmdsAdmin:
 
             logger.debug(f'tick @ {time.time()}')
 
-            table = self.get_db_table('bot_ch')
+            table = self.db.table('bot_ch')
             for entry in table:
                 guild = self.get_guild(entry.doc_id)
                 if isinstance(guild, type(None)):

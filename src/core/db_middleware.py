@@ -1,4 +1,5 @@
 from tinydb.middlewares import Middleware
+
 import threading
 import logging
 

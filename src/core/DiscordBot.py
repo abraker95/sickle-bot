@@ -3,6 +3,7 @@ from typing import Optional
 import os
 import importlib
 import inspect
+import traceback
 import warnings
 import time
 
@@ -17,9 +18,9 @@ import yaml
 
 import tinydb
 from tinydb.table import Document
-from main.db_middleware import DbThreadSafeMiddleware
 
-from main.utils import Utils
+from .db_middleware import DbThreadSafeMiddleware
+from .utils import Utils
 
 
 
@@ -157,8 +158,8 @@ class DiscordBot(discord.Client):
         self.loop.create_task(self.__main_loop())
 
         # Load commands and events
-        root = os.path.abspath(os.path.dirname(__file__))
-        bot_dir_files = os.listdir(f'{root}/cmds')
+        cmd_path = self.CONFIG["Core"]["cmd_path"]
+        bot_dir_files = os.listdir(f'{os.getcwd()}/{self.CONFIG["Core"]["cmd_path"]}')
         self.__logger.debug(f'Files found: {bot_dir_files}')
 
         module_files = [ f[:-3] for f in bot_dir_files if f != '__init__.py' and f[-3:] == '.py' ]
@@ -167,9 +168,12 @@ class DiscordBot(discord.Client):
         for module_file in module_files:
             self.__logger.info(f'Importing {module_file}')
 
-            try: module = importlib.import_module(f'main.cmds.{module_file}')
+            try: module = importlib.import_module(f'cmds.{module_file}')
             except Exception as e:
-                self.__logger.error(f'   error importing: {e}')
+                self.__logger.error(
+                    f'   error importing: {e}\n'
+                    f'{traceback.print_exception(e)}'
+                )
                 continue
 
             self._modules[module_file] = []
@@ -222,43 +226,56 @@ class DiscordBot(discord.Client):
 
 
     async def on_ready(self):
-        await self.wait_until_ready()
+        try:
+            await self.wait_until_ready()
 
-        # Look for debug channel where errors would get posted
-        self.__logger.info(f'Looking for debug channel...')
-        self.__dbg_ch = None
+            # Look for debug channel where errors would get posted
+            self.__logger.info(f'Looking for debug channel...')
+            self.__dbg_ch = None
 
-        for channel in self.get_all_channels():
-            if channel.id == self.get_cfg('Core', 'debug_channel'):
-                self.__dbg_ch = channel
+            for channel in self.get_all_channels():
+                self.__logger.info(f'    Channel: {channel.guild.name}:#{channel.name}')
+                if channel.id == self.get_cfg('Core', 'debug_channel_id'):
+                    self.__dbg_ch = channel
 
-            # Auto assign bot channel if not set and enable it in there
-            if 'bot' in channel.name:
-                table = self.__db.table(self.__TABLE_BOT_CH)
-                if not table.contains(doc_id=channel.guild.id):
-                    self.__logger.info(f'Setting bot channel for {channel.guild.name}#{channel.name} | {channel.guild.id}.{channel.id}')
-                    table.insert(Document({ 'channel' : channel.id }, channel.guild.id))
+                # Auto assign bot channel if not set and enable it in there
+                if 'bot' in channel.name:
+                    table = self.__db.table(self.__TABLE_BOT_CH)
+                    if not table.contains(doc_id=channel.guild.id):
+                        self.__logger.info(f'Setting bot channel for {channel.guild.name}#{channel.name} | {channel.guild.id}.{channel.id}')
+                        table.insert(Document({ 'channel' : channel.id }, channel.guild.id))
 
-                table = self.__db.table(self.__TABLE_BOT_EN)
-                if not table.contains(doc_id=channel.id):
-                    table.insert(Document({ 'chan_en' : True }, channel.id))
+                    table = self.__db.table(self.__TABLE_BOT_EN)
+                    if not table.contains(doc_id=channel.id):
+                        table.insert(Document({ 'chan_en' : True }, channel.id))
 
-        if isinstance(self.__dbg_ch, type(None)):
-            self.__logger.info(f'Debug channel not found!')
-        else:
-            self.__logger.info(f'Debug channel found!')
+            if isinstance(self.__dbg_ch, type(None)):
+                self.__logger.info(f'Debug channel not found!')
+            else:
+                self.__logger.info(f'Debug channel found!')
 
-        # Run events
-        self.__logger.info('Initializing events...')
-        for name, event in self._events.items():
-            if event['en']:
-                self.__logger.info(f'    {name}')
-                self.__bot_loop.create_task(event['func'](self))
+            # Run events
+            self.__logger.info('Initializing events...')
+            for name, event in self._events.items():
+                if event['en']:
+                    self.__logger.info(f'    {name}')
+                    self.__bot_loop.create_task(event['func'](self))
 
-        # Present as ready
-        self.__logger.info(f'Ready!')
-        await self.change_presence(activity=discord.Game(':bat:'), status=discord.Status.online)
-        await self.__report('Discord loop started')
+            # Present as ready
+            self.__logger.info(f'Ready!')
+            await self.change_presence(activity=discord.Game(':bat:'), status=discord.Status.online)
+            await self.__report('Discord loop started')
+        except Exception as e:
+            await self.__report(
+                f'[ ERROR ]\n'
+                f'{e}\n'
+                f'{traceback.print_exception(e)}'
+            )
+
+
+    @property
+    def db(self):
+        return self.__db
 
 
     @staticmethod

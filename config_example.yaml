@@ -9,8 +9,9 @@ Core:
   debug_channel_id:  # (int)
 
   # Runtime Settings and paths
-  is_debug: true     # For warn, info, and debug printouts
-  log_path: 'logs'
+  is_debug: true        # For warn, info, and debug printouts
+  log_path: 'logs'      # Where logs would be stored
+  cmd_path: 'src/cmds'  # Path to bot command directory (relative to cwd)
 
   # Feed relay server config
   feed_server_port:   # (int)

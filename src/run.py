@@ -1,7 +1,7 @@
 import sys
 
-if sys.version_info < (3, 8):
-    print('Python 3.8 or later is required!')
+if sys.version_info < (3, 10):
+    print('Python 3.10 or later is required!')
     sys.exit(1)
 
 import traceback
@@ -10,12 +10,11 @@ import os
 
 import pathlib
 import logging
-from main.Logger import LoggerClass
 
 import yaml
 
-
-from main.DiscordBot import DiscordBot
+from core.Logger import LoggerClass
+from core.DiscordBot import DiscordBot
 
 
 excepthook_old = sys.excepthook

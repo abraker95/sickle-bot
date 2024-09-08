@@ -1,7 +1,7 @@
 import discord
 import warnings
 
-from main import DiscordBot
+from core import DiscordBot
 
 
 class CmdsOsu:

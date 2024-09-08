@@ -4,7 +4,7 @@ import logging
 
 from tinydb.table import Document
 
-from main import DiscordCmdBase, DiscordBot
+from core import DiscordCmdBase, DiscordBot
 
 
 class CmdsModeration:
@@ -48,7 +48,7 @@ class CmdsModeration:
             await self.run_help_cmd(msg, 'bot.en')
             return
 
-        table = self.get_db_table('bot_en')
+        table = self.db.table('bot_en')
         if not table.contains(doc_id=msg.channel.id):
             table.insert(Document({ 'chan_en' : en }, msg.channel.id))
         else:
@@ -79,7 +79,7 @@ class CmdsModeration:
             embed.add_field(name='Insufficient permissions', value=f'You need the manage channel permission to use this command')
             await msg.channel.send(None, embed=embed)
 
-        table = self.get_db_table('bot_ch')
+        table = self.db.table('bot_ch')
         if not table.contains(doc_id=msg.guild.id):
             table.insert(Document({ 'channel' : msg.channel.id }, msg.guild.id))
 
@@ -119,7 +119,7 @@ class CmdsModeration:
                 ...
             }
         """
-        table = self.get_db_table('bot_ch')
+        table = self.db.table('bot_ch')
         if not table.contains(doc_id=msg.guild.id):
             embed = discord.Embed(title=f'No bot channel set', color=0x1ABC9C)
             await msg.channel.send(None, embed=embed)
@@ -181,7 +181,7 @@ class CmdsModeration:
                 return
 
         # Add to db
-        table = self.get_db_table('custom_cmds')
+        table = self.db.table('custom_cmds')
 
         entry = table.get(doc_id=msg.guild.id)
         if isinstance(entry, type(None)):
@@ -240,7 +240,7 @@ class CmdsModeration:
                 return
 
         # Remove from db
-        table = self.get_db_table('custom_cmds')
+        table = self.db.table('custom_cmds')
 
         entry = table.get(doc_id=msg.guild.id)
         if isinstance(entry, type(None)):
@@ -264,7 +264,7 @@ class CmdsModeration:
         logger = logging.getLogger('reg_cmds')
         logger.info(f'Registering custom cmds...')
 
-        table = self.get_db_table('custom_cmds')
+        table = self.db.table('custom_cmds')
         for entry in table.all():
             for cmd_txt, cmd_msg in entry.items():
                 logger.info(f'    {cmd_txt}')

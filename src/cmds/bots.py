@@ -3,10 +3,10 @@ import aiohttp
 import asyncio
 import warnings
 
-from main import DiscordCmdBase, DiscordBot
+from core import DiscordCmdBase, DiscordBot
 
 
-class CmdsApi:
+class CmdsBots:
     """
     Commands for other bots: DiscordBot -> [external]
     """

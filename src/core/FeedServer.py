@@ -11,8 +11,8 @@ import uvicorn
 import logging
 import fastapi
 
-from main import DiscordBot
-from main.utils import Utils
+from .DiscordBot import DiscordBot
+from .utils import Utils
 
 
 class UvicornServerPatch(uvicorn.Server):
@@ -133,7 +133,7 @@ class FeedServer():
     __app    = fastapi.FastAPI()
 
     @staticmethod
-    async def init(callback: Callable[[str, dict]]):
+    async def init(callback: Callable[[str, dict], dict]):
         """
         Intializes the Sickle bot API server
 
@@ -175,13 +175,13 @@ class FeedServer():
 
 
     @staticmethod
-    @app.put('/admin/ping')  # type: ignore
+    @__app.put('/admin/ping')  # type: ignore
     async def ping():
         return { 'status' : 'ok' }
 
 
     @staticmethod
-    @app.put('/admin/shutdown')  # type: ignore
+    @__app.put('/admin/shutdown')  # type: ignore
     async def shutdown():
         try: await FeedServer.http_server.shutdown()
         except Exception as e:
@@ -195,12 +195,12 @@ class FeedServer():
 
 
     @staticmethod
-    @app.post('/admin/post')  # type: ignore
+    @__app.post('/admin/post')  # type: ignore
     async def admin_post(data: fastapi.Request):
         await FeedServer.__exec_callback('/admin/post', data)
 
 
     @staticmethod
-    @app.post('/osu/post')  # type: ignore
+    @__app.post('/osu/post')  # type: ignore
     async def handle_post(data: fastapi.Request):
         await FeedServer.__exec_callback('/osu/post', data)
