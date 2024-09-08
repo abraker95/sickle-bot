@@ -25,7 +25,7 @@ class UvicornServerPatch(uvicorn.Server):
           in a larger overall app. ctrl+f "PATCH" for code commentating fix.
     """
 
-    __logger = logging.getLogger('UvicornServerPatch')
+    __logger = logging.getLogger(__qualname__)
 
     async def startup(self: uvicorn.Server, sockets: list[socket.socket] | type[None] = None) -> None:
         await self.lifespan.startup()
@@ -129,10 +129,11 @@ class UvicornServerPatch(uvicorn.Server):
 
 class FeedServer():
 
-    app = fastapi.FastAPI()
+    __logger = logging.getLogger(__qualname__)
+    __app    = fastapi.FastAPI()
 
     @staticmethod
-    async def init(callback: Callable):
+    async def init(callback: Callable[[str, dict]]):
         """
         Intializes the Sickle bot API server
 
@@ -142,66 +143,30 @@ class FeedServer():
             Callback to function that would process the discord bot request
         """
         FeedServer.callback = callback
-        FeedServer.logger = logging.getLogger('FeedServer')
 
-        feed_server_port = DiscordBot.get_cfg('Core', 'feed_server_port')
-        FeedServer.logger.info(f'Initializing server: 127.0.0.1:{feed_server_port}')
-        FeedServer.http_server = UvicornServerPatch(uvicorn.Config(app=FeedServer.app, host='127.0.0.1', port=feed_server_port, log_level='info'))
+        api_port = DiscordBot.get_cfg('Core', 'api_port')
+        FeedServer.__logger.info(f'Initializing server: 127.0.0.1:{api_port}')
+        FeedServer.http_server = UvicornServerPatch(uvicorn.Config(app=FeedServer.__app, host='127.0.0.1', port=api_port, log_level='info'))
         await FeedServer.http_server.serve()
 
 
-    # [2024.09.07] TODO: Rename to /admin/ping
     @staticmethod
-    @app.put('/ping')  # type: ignore
-    async def ping():
-        FeedServer.logger.info('Pong')
-        return { 'status' : 'ok' }
-
-
-    # [2024.09.07] TODO: Rename to /admin/shutdown
-    @staticmethod
-    @app.put('/internal')  # type: ignore
-    async def shutdown(data: fastapi.Request):
-        if FeedServer.callback is None:
-            return { 'status' : 'err' }
-
-        data = await data.json()
-        FeedServer.logger.debug(f'Internal command: {data}')
-
-        if 'shutdown' in data:
-            try:
-                await FeedServer.http_server.shutdown()
-                return { 'status' : 'ok' }
-            except Exception as e:
-                FeedServer.logger.error(
-                    f'Error processing "/internal": {type(e)}\n'
-                    f'{Utils.format_exception(e)}'
-                )
-                return { 'status' : 'err' }
-
-        return { 'status' : 'err' }
-
-
-    # [2024.09.07] TODO: Rename to /osu/post
-    @staticmethod
-    @app.post('/post')  # type: ignore
-    async def handle_post(data: fastapi.Request):
+    async def __exec_callback(route: str, data: fastapi.Request):
         if FeedServer.callback is None:
             return { 'status' : 'err' }
 
         data = await data.json()
 
-        try:
-            await FeedServer.callback(data)
+        try: await FeedServer.callback(route, data)
         except KeyError as e:
             warnings.warn(
-                f'Error processing "/post":\n'
+                f'Error processing "{route}":\n'
                 f'Raised {type(e)}: {e}\n'
                 f'Data: {data}'
             )
         except Exception as e:
             warnings.warn(
-                f'Error processing "/post":\n'
+                f'Error processing "{route}":\n'
                 f'{Utils.format_exception(e)}'
             )
             return { 'status' : 'err' }
@@ -209,5 +174,33 @@ class FeedServer():
         return { 'status' : 'ok' }
 
 
-    # [2024.09.07] TODO: Add /admin/post endpoint
-    #   This will send post a message to the bot-test channel (or whatever it's configured to)
+    @staticmethod
+    @app.put('/admin/ping')  # type: ignore
+    async def ping():
+        return { 'status' : 'ok' }
+
+
+    @staticmethod
+    @app.put('/admin/shutdown')  # type: ignore
+    async def shutdown():
+        try: await FeedServer.http_server.shutdown()
+        except Exception as e:
+            FeedServer.__logger.error(
+                f'Error processing "/internal": {type(e)}\n'
+                f'{Utils.format_exception(e)}'
+            )
+            return { 'status' : 'err' }
+
+        return { 'status' : 'ok' }
+
+
+    @staticmethod
+    @app.post('/admin/post')  # type: ignore
+    async def admin_post(data: fastapi.Request):
+        await FeedServer.__exec_callback('/admin/post', data)
+
+
+    @staticmethod
+    @app.post('/osu/post')  # type: ignore
+    async def handle_post(data: fastapi.Request):
+        await FeedServer.__exec_callback('/osu/post', data)

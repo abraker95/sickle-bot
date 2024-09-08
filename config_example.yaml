@@ -6,7 +6,7 @@ Core:
   admin_user_id:  # (int)
 
   # Channel ID to post debug messages such as errors and general failures
-  debug_channel:  # (int)
+  debug_channel_id:  # (int)
 
   # Runtime Settings and paths
   is_debug: true     # For warn, info, and debug printouts

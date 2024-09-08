@@ -156,7 +156,7 @@ class DiscordBot(discord.Client):
         # Create main loop
         self.loop.create_task(self.__main_loop())
 
-        # Load commands
+        # Load commands and events
         root = os.path.abspath(os.path.dirname(__file__))
         bot_dir_files = os.listdir(f'{root}/cmds')
         self.__logger.debug(f'Files found: {bot_dir_files}')
