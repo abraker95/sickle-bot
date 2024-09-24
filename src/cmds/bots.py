@@ -42,7 +42,7 @@ class CmdsBots:
 
         async with aiohttp.ClientSession() as session:
             try:
-                async with session.put(f'http://127.0.0.1:{bot_forum_monitor_port}/request', timeout=1, json=data) as response:
+                async with session.put(f'http://127.0.0.1:{bot_forum_monitor_port}/request', timeout=5, json=data) as response:
                     if response.status != 200:
                         await msg.channel.send('Failed')
                         return
@@ -68,11 +68,11 @@ class CmdsBots:
         else:
             txt = 'Done' if reply['status'] == 0 else 'Failed'
 
-        txt = f'```\n{txt}\n```'
 
-        match reply['status']:
-            case -1: embed = discord.Embed(color=0x880000, description=txt)
-            case  0: embed = discord.Embed(color=0x008800, description=txt)
-            case  _: embed = discord.Embed(color=0x880088, description=txt)
+        # [2024.09.22] TODO: Proper line-by-line parsing + proper formatting splits
+        #   ex: ```code``` across multiple chunks
+        chunks = [ txt[i : i + 1023] for i in range(0, len(txt), 1023) ]
+        for chunk in chunks:
 
-        await msg.channel.send(None, embed=embed)
+            assert len(chunk) < 2000, f'chunk length is {len(chunk)}'
+            await msg.channel.send(chunk)
