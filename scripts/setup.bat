@@ -21,4 +21,12 @@ if "%VIRTUAL_ENV%" == "" (
     if %errorlevel% neq 0 exit /b %errorlevel%
 )
 
-python src\\run.py
+python -m pip install --upgrade pip
+if %errorlevel% neq 0 exit /b %errorlevel%
+
+python -m pip install -r requirements.txt
+if %errorlevel% neq 0 exit /b %errorlevel%
+
+python -m pip list
+
+echo [ DONE ]

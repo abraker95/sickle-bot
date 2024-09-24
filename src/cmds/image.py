@@ -9,7 +9,7 @@ import PIL
 from PIL import Image, ImageOps, ImageSequence
 from io import BytesIO
 
-from main import DiscordCmdBase, DiscordBot
+from core import DiscordCmdBase, DiscordBot
 
 
 

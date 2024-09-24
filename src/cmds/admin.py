@@ -8,7 +8,7 @@ import time
 import random
 import inspect
 
-from main import DiscordCmdBase, DiscordBot
+from core import DiscordCmdBase, DiscordBot
 
 
 class CmdsAdmin:
@@ -40,8 +40,8 @@ class CmdsAdmin:
             data = { 'shutdown' : True }
 
             try:
-                feed_server_port = DiscordBot.get_cfg('Core', 'feed_server_port')
-                async with session.put(f'http://127.0.0.1:{feed_server_port}/internal', timeout=1, json=data) as response:
+                api_port = DiscordBot.get_cfg('Core', 'api_port')
+                async with session.put(f'http://127.0.0.1:{api_port}/internal', timeout=1, json=data) as response:
                     if response.status != 200:
                         warnings.warn('Could not contact feed relay server')
                         return
@@ -144,7 +144,7 @@ class CmdsAdmin:
             await msg.channel.send(None, embed=status)
             return
 
-        table = self.get_db_table('bot_stats')
+        table = self.db.table('bot_stats')
         entry = table.get(doc_id=msg.guild.id)
 
         if isinstance(entry, type(None)):
@@ -253,7 +253,7 @@ class CmdsAdmin:
 
             logger.debug(f'tick @ {time.time()}')
 
-            table = self.get_db_table('bot_ch')
+            table = self.db.table('bot_ch')
             for entry in table:
                 guild = self.get_guild(entry.doc_id)
                 if isinstance(guild, type(None)):

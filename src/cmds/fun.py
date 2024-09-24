@@ -3,7 +3,7 @@ import asyncio
 import requests
 import random
 
-from main import DiscordCmdBase, DiscordBot
+from core import DiscordCmdBase, DiscordBot
 
 
 

@@ -6,14 +6,18 @@ Core:
   admin_user_id:  # (int)
 
   # Channel ID to post debug messages such as errors and general failures
-  debug_channel:  # (int)
+  debug_channel_id:  # (int)
 
   # Runtime Settings and paths
-  is_debug: true     # For warn, info, and debug printouts
-  log_path: 'logs'
+  is_debug: true        # For warn, info, and debug printouts
+  log_path: 'logs'      # Where logs would be stored
+  cmd_path: 'src/cmds'  # Path to bot command directory (relative to cwd)
 
-  # Feed relay server config
-  feed_server_port:   # (int)
+  # Port on which the bot's API will listen on
+  api_port:   # (int)
+
+  # Port on which the forum monitor's API listens on
+  bot_forum_monitor_port:   # (int)
 
   # Bot Control Settings
   server_url: 'http://localhost/'

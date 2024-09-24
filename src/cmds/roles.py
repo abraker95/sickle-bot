@@ -3,7 +3,7 @@ import warnings
 
 import tinydb
 
-from main import DiscordCmdBase, DiscordBot
+from core import DiscordCmdBase, DiscordBot
 
 
 
@@ -110,7 +110,7 @@ class CmdsRoles:
 
         role_name = args[0].lower()
 
-        table = self.get_db_table('self_roles')
+        table = self.db.table('self_roles')
         results = table.search(tinydb.Query().fragment({ 'server' : msg.guild.id, 'role_name' : role_name }))
 
         # Find the role in DB
@@ -205,7 +205,7 @@ class CmdsRoles:
 
         role = role[0]
 
-        table = self.get_db_table('self_roles')
+        table = self.db.table('self_roles')
         table.upsert(
             { 'server' : msg.guild.id, 'role_id' : role.id, 'role_name' : role.name },
             tinydb.Query().fragment({ 'server' : msg.guild.id, 'role_id' : role.id })
@@ -251,7 +251,7 @@ class CmdsRoles:
             # NOTE: Shouldn't happen
             warnings.warn('Found more than one role in server')
 
-        table = self.get_db_table('self_roles')
+        table = self.db.table('self_roles')
 
         if len(role) == 0:
             # Fallback to role name
@@ -292,7 +292,7 @@ class CmdsRoles:
                 ...
             }
         """
-        table = self.get_db_table('self_roles')
+        table = self.db.table('self_roles')
         results = table.search(tinydb.Query().fragment({ 'server' : msg.guild.id }))
 
         role_list = '\n'.join([ role['role_name'] for role in results ])

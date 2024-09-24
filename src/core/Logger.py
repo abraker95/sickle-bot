@@ -1,4 +1,4 @@
-from typing import Callable
+from collections.abc import Callable
 
 import logging
 import traceback
@@ -36,6 +36,10 @@ class Logger(logging.Logger):
     def __del__(self):
         self.sh.close(); self.removeHandler(self.sh)
         self.fh.close(); self.removeHandler(self.fh)
+
+
+    def set_report_callback(self, callback: Callable):
+        self.callback = callback
 
 
     # \FIXME: https://osu.ppy.sh/forum/t/772528 <- this thread's title has characters which break logger encoding; Error report: https://i.imgur.com/pFmcQvB.png

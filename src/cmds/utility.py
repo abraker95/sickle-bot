@@ -14,7 +14,7 @@ import discord
 import tinydb
 from tinydb.table import Document
 
-from main import DiscordCmdBase, DiscordBot
+from core import DiscordCmdBase, DiscordBot
 
 
 
@@ -406,7 +406,7 @@ class CmdsUtility:
             'text'        : text
         }
 
-        table = self.get_db_table('reminders')
+        table = self.db.table('reminders')
         table.insert(Document(data, doc_id=msg.id))
 
         embed = discord.Embed(color=0x66CC66, timestamp=arrow.get(due_timestamp).datetime)
@@ -426,7 +426,7 @@ class CmdsUtility:
             'Input a number after the command to see more details about that reminder.'
     )
     async def reminders(self: DiscordBot, msg: discord.Message, *args: "list[str]"):
-        table = self.get_db_table('reminders')
+        table = self.db.table('reminders')
         entries = table.search(tinydb.Query().fragment({ 'server_id' : msg.guild.id, 'user_id' : msg.author.id }))
 
         num_reminders = len(entries)
@@ -598,7 +598,7 @@ class CmdsUtility:
             await asyncio.sleep(1)
             # logger.debug(f'tick @ {time.time()}')
 
-            table = self.get_db_table('reminders')
+            table = self.db.table('reminders')
             for guild in self.guilds:
                 # Sleep to yield db search
                 await asyncio.sleep(0.1)
