@@ -183,22 +183,22 @@ class CmdsAdmin:
 
         mem_virt_dat      = psutil.virtual_memory()
         mem_virt_gb_total = mem_virt_dat.total / ( 1024**3 )
-        mem_virt_gb_free  = mem_virt_dat.free / ( 1024**3 )
+        mem_virt_gb_used  = mem_virt_dat.used / ( 1024**3 )
 
         mem_swap_dat      = psutil.swap_memory()
         mem_swap_gb_total = mem_swap_dat.total / ( 1024**3 )
-        mem_swap_gb_free  = mem_swap_dat.free / ( 1024**3 )
+        mem_swap_gb_used  = mem_swap_dat.used / ( 1024**3 )
 
         disk_dat      = psutil.disk_usage('/')
         disk_gb_total = disk_dat.total / ( 1024**3 )
-        disk_gb_free  = disk_dat.free / ( 1024**3 )
+        disk_gb_used  = disk_dat.used / ( 1024**3 )
 
         stats_str = (
             f'Uptime:   {uptime.days}d {uptime.seconds // 3600}h {uptime.seconds // 60 % 60}m {uptime.seconds % 60}s\n'
             f'CPU %:    {psutil.cpu_percent()}\n'
-            f'Mem virt: {mem_virt_gb_free:>7.3f} GB / {mem_virt_gb_total:>7.3f} GB ({mem_virt_dat.percent}%)\n'
-            f'Mem swap: {mem_swap_gb_free:>7.3f} GB / {mem_swap_gb_total:>7.3f} GB ({mem_swap_dat.percent}%)\n'
-            f'Disk:     {disk_gb_free:>7.3f} GB / {disk_gb_total:>7.3f} GB ({disk_dat.percent}%)\n'
+            f'Mem virt: {mem_virt_gb_used:>7.3f} GB / {mem_virt_gb_total:>7.3f} GB ({mem_virt_dat.percent}%)\n'
+            f'Mem swap: {mem_swap_gb_used:>7.3f} GB / {mem_swap_gb_total:>7.3f} GB ({mem_swap_dat.percent}%)\n'
+            f'Disk:     {disk_gb_used:>7.3f} GB / {disk_gb_total:>7.3f} GB ({disk_dat.percent}%)\n'
         )
 
         reply = discord.Embed(color=0x1abc9c)
