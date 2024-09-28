@@ -7,6 +7,8 @@ import logging
 import time
 import random
 import inspect
+import psutil
+import datetime
 
 from core import DiscordCmdBase, DiscordBot
 
@@ -163,6 +165,45 @@ class CmdsAdmin:
         reply.add_field(name=f'Stats', value=f'```yaml\n{stats_str}```')
         await msg.channel.send(None, embed=reply)
 
+
+    @staticmethod
+    @DiscordCmdBase.DiscordCmd(
+        perm    = DiscordCmdBase.ADMINISTRATOR,
+        example = f'{DiscordBot.cmd_prefix}bot.stats',
+        help    =
+            'Prints this bots\'s stats'
+    )
+    async def sys_stats(self: DiscordBot, msg: discord.Message, *args: "list[str]"):
+        if msg.author.id != DiscordBot.get_cfg('Core', 'admin_user_id'):
+            status = discord.Embed(title='You must be the bot admin to use this command', color=0x800000)
+            await msg.channel.send(None, embed=status)
+            return
+
+        uptime = datetime.timedelta(seconds=time.time() - psutil.boot_time())
+
+        mem_virt_dat      = psutil.virtual_memory()
+        mem_virt_gb_total = mem_virt_dat.total / ( 1024**3 )
+        mem_virt_gb_free  = mem_virt_dat.free / ( 1024**3 )
+
+        mem_swap_dat      = psutil.swap_memory()
+        mem_swap_gb_total = mem_swap_dat.total / ( 1024**3 )
+        mem_swap_gb_free  = mem_swap_dat.free / ( 1024**3 )
+
+        disk_dat      = psutil.disk_usage('/')
+        disk_gb_total = disk_dat.total / ( 1024**3 )
+        disk_gb_free  = disk_dat.free / ( 1024**3 )
+
+        stats_str = (
+            f'Uptime:   {uptime.days}d {uptime.seconds // 3600}h {uptime.seconds // 60 % 60}m {uptime.seconds % 60}s\n'
+            f'CPU %:    {psutil.cpu_percent()}\n'
+            f'Mem virt: {mem_virt_gb_free:>7.3f} GB / {mem_virt_gb_total:>7.3f} GB ({mem_virt_dat.percent}%)\n'
+            f'Mem swap: {mem_swap_gb_free:>7.3f} GB / {mem_swap_gb_total:>7.3f} GB ({mem_swap_dat.percent}%)\n'
+            f'Disk:     {disk_gb_free:>7.3f} GB / {disk_gb_total:>7.3f} GB ({disk_dat.percent}%)\n'
+        )
+
+        reply = discord.Embed(color=0x1abc9c)
+        reply.add_field(name=f'Stats', value=f'```yaml\n{stats_str}```')
+        await msg.channel.send(None, embed=reply)
 
 
     @staticmethod

@@ -9,3 +9,4 @@ pillow
 GitPython
 zmq
 pyyaml
+psutil
