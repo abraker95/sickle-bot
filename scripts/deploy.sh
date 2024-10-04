@@ -19,7 +19,7 @@ mv /home/server/prod/sickle-bot/db.json /home/server/tmp/db.json
 
 # Nuke the folder and copy over the updated files in repo location -> prod location
 rm -rf /home/server/prod/sickle-bot
-rsync -a --progress . /home/server/prod/sickle-bot --exclude config.yaml --exclude db.json
+rsync -a --progress . /home/server/prod/sickle-bot --exclude config.yaml --exclude db.json --exclude .git
 chown -R server:server /home/server/prod/sickle-bot
 
 # Move config and db files back

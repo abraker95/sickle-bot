@@ -20,4 +20,4 @@ if [[ "$VIRTUAL_ENV" == "" ]]; then
     exit 1
 fi
 
-python3 run.py
+python3 src/run.py
