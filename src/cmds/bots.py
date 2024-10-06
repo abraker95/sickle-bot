@@ -42,7 +42,7 @@ class CmdsBots:
 
         async with aiohttp.ClientSession() as session:
             try:
-                async with session.put(f'http://127.0.0.1:{bot_forum_monitor_port}/request', timeout=5, json=data) as response:
+                async with session.put(f'http://127.0.0.1:{bot_forum_monitor_port}/request', timeout=10, json=data) as response:
                     if response.status != 200:
                         await msg.channel.send('Failed')
                         return
