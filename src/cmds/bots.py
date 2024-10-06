@@ -13,7 +13,7 @@ class CmdsBots:
 
     @DiscordCmdBase.DiscordCmd(
         perm    = DiscordCmdBase.ANYONE,
-        example = f'{DiscordBot.cmd_prefix}forum.bot <cmd>',
+        example = f'{DiscordBot.cmd_prefix}bot.forum <cmd>',
         help    =
             'Access forum bot endpoint'
     )
