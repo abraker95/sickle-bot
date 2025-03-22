@@ -15,17 +15,17 @@ class CmdsOsu:
         Processes the '/osu/post' BotApi endpoint
         """
         required_keys = set((
-                'subforum_id',
-                'subforum_name',
-                'post_date',
-                'prev_post_date',
-                'thread_title',
-                'post_id',
-                'first_post_id',
-                'username',
-                'user_id',
-                'avatar_url',
-                'contents',
+            'subforum_id',
+            'subforum_name',
+            'post_date',
+            'prev_post_date',
+            'thread_title',
+            'post_id',
+            'first_post_id',
+            'username',
+            'user_id',
+            'avatar_url',
+            'contents',
         ))
         if not required_keys.issubset(data):
             warnings.warn(f'Comment data is incomplete!\nData: {data.keys()}\nRequired: {required_keys}')
