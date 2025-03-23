@@ -137,6 +137,17 @@ class FeedServer():
         """
         Intializes the Sickle bot API server
 
+        ::
+            Use the following to check if the ApiServer is up. This should post to
+            the discord channel designated as the discord bot debug channel.
+            ```sh
+            curl -X POST http://localhost:PORT/admin/post -H "Content-Type: application/json" -d '{ "src": "test", "contents": "blah" }'
+            ```
+
+            Where
+            - `PORT` is the API server port defined in `config.yaml::Core.api_port`
+            - Discord bit debug channel is defined in `config.yaml::Core.debug_channel_id`
+
         Params
         ======
         callback: Callable
